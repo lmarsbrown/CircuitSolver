@@ -14,6 +14,32 @@ class Matrix
         }
         return out;
     }
+    static mulMat(mat0,mat1,dst)
+    {
+        let size = Math.sqrt(mat0.length);
+        if(size%1 != 0)
+        {
+            console.error("Non Square Matrix");
+        }
+        if(mat0.length != mat1.length)
+        {
+            console.error("Matricies must be the same size");
+        }
+        let out = Matrix.mat(size);
+        for(let y = 0; y < size; y++)
+        {
+            for(let x = 0; x < size; x++)
+            {
+                let sum = 0;
+                for(let i = 0; i < size; i++)
+                {
+                    sum += Matrix.getElement(mat0,i,y) * Matrix.getElement(mat1,x,i);
+                }
+                Matrix.setElement(out,x,y,sum);
+            }
+        }
+        Matrix.copyMat(out,dst);
+    }
 
     static addVecs(vec0,vec1)
     {
@@ -64,7 +90,7 @@ class Matrix
         return Math.sqrt(length);
     }
 
-    static invert(src,dst)
+    static invertSketchy(src,dst)
     {
         let width = Math.sqrt(src.length);
         let proccesingMat = Matrix.newCopyMat(src);
@@ -94,6 +120,56 @@ class Matrix
         }
         Matrix.copyMat(outMat,dst);
     }
+    
+    static invert(src,dst)
+    {
+        let width = Math.sqrt(src.length);
+        let proccesingMat = Matrix.newCopyMat(src);
+        let outMat = new Float32Array(src.length);
+        Matrix.identity(outMat);
+
+        for(let x = 0; x < width; x++)
+        {
+            let corn = Matrix.getElement(proccesingMat,x,x);
+            if(corn == 0)
+            {
+                for(let y = x+1; corn == 0; y++)
+                {
+                    if(Matrix.getElement(proccesingMat,x,y) != 0)
+                    {
+                        Matrix.addScaleRow(proccesingMat,proccesingMat,1,y,x);
+                        Matrix.addScaleRow(outMat,outMat,1,y,x);
+                        corn = Matrix.getElement(proccesingMat,x,x);
+                    }
+                    if(corn == 0 && y >= width-1)
+                    {
+                        console.error("MATRIX CANNOT BE SOVLED");
+                    }
+                }
+            }
+
+            let scale0 = 1/corn;
+            Matrix.scaleRow(outMat,scale0,x);
+            Matrix.scaleRow(proccesingMat,scale0,x);
+            for(let y = x+1; y < width; y++)
+            {
+                let scale1 = -Matrix.getElement(proccesingMat,x,y);
+                Matrix.addScaleRow(proccesingMat,proccesingMat,scale1,x,y);
+                Matrix.addScaleRow(outMat,outMat,scale1,x,y);
+            }
+        }
+        for(let x = 0; x < width; x++)
+        {
+            for(let y = 0; y < x; y++)
+            {
+                let scale1 = -Matrix.getElement(proccesingMat,x,y);
+                Matrix.addScaleRow(proccesingMat,proccesingMat,scale1,x,y);
+                Matrix.addScaleRow(outMat,outMat,scale1,x,y);
+            }
+        }
+        Matrix.copyMat(outMat,dst);
+    }
+
 
     static getElement(mat,x,y)
     {
