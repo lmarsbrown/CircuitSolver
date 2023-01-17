@@ -50,6 +50,15 @@ class Matrix
         }
         return out;
     }
+    static subVecs(vec0,vec1)
+    {
+        let out = Matrix.vec(vec0.length);
+        for(let i = 0; i < out.length; i++)
+        {
+            out[i] = vec0[i]-vec1[i];
+        }
+        return out;
+    }
 
     static scaleVec(vec0,scalar)
     {
@@ -285,8 +294,20 @@ class Matrix
     {
         return new Float32Array(size*size);
     }
-    static vec(size)
+    static vec(...args)
     {
-        return new Float32Array(size);
+        if(args.length == 1)
+        {
+            return new Float32Array(args[0]);
+        }
+        else
+        {
+            let out = new Float32Array(args.length);
+            for(let i = 0; i < args.length; i++)
+            {
+                out[i] = args[i];
+            } 
+            return out
+        }
     }
 }

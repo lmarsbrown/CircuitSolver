@@ -1,177 +1,81 @@
-class Circuit
-{
-    constructor()
-    {
-        this.nodes = [];
-        this.components = [];
-    }
-    createNode(src,voltage=0)
-    {
-        let node = {index:this.nodes.length,voltage:voltage,src:src};
-        if(!src)
-        {
-            this.nodes.push(node);
-        }
-        return node;
-    }
-    createResistor(node1,node2,resistance)
-    {
-        let c = {n1:node1,n2:node2,val:resistance,type:0};
-        this.components.push(c);
-        return c;
-    }
-    createVoltageSupply(node1,node2,voltage)
-    {
-        let c = {n1:node1,n2:node2,val:voltage,type:1};
-        this.components.push(c);
-        return c;
-    }
-    createCurrentSupply(node1,node2,current)
-    {
-        let c = {n1:node1,n2:node2,val:current,type:2};
-        this.components.push(c);
-        return c;
-    }
-    getLinear()
-    {
-        let size = this.components.length+this.nodes.length+1;
-        let cLen = this.components.length;
-        let mat = Matrix.mat(size);
-        let vec = Matrix.vec(size);
-        Matrix.setElement(mat,size-1,size-1,1);
-        vec[size-1] = 1;
-        for(let r = 0; r < this.components.length; r++)
-        {
-            //Voltage difference across part
-            let comp = this.components[r];
-            if(comp.type == 0)
-            {
-                Matrix.setElement(mat,r,r,comp.val);
-            }
-            else if(comp.type == 1)
-            {
-                Matrix.setElement(mat,size-1,r,comp.val);
-            }
-            else if(comp.type == 2)
-            {
-                Matrix.setElement(mat,r,r,1);
-            }
+let circ = [];
 
-            //Voltage of connecting components
-            if(!comp.n1.src)
-            {
-                let ind = cLen+comp.n1.index;
-                Matrix.setElement(mat,ind,r,-1);
-                if(comp.type != 2)
-                {
-                    Matrix.setElement(mat,r,ind,-1);
-                }
-                else
-                {
-                    let existVal = Matrix.getElement(mat,size-1,ind);
-                    Matrix.setElement(mat,size-1,ind,existVal-comp.val);
-                }
-            }
-            else
-            {
-                vec[r] = comp.n1.voltage;
-            }
-            if(!comp.n2.src)
-            {
-                let ind = cLen+comp.n2.index;
-                Matrix.setElement(mat,ind,r,1);
-                if(comp.type != 2)
-                {
-                    Matrix.setElement(mat,r,ind,1);
-                }
-                else
-                {
-                    let existVal = Matrix.getElement(mat,size-1,ind);
-                    Matrix.setElement(mat,size-1,ind,existVal+comp.val);
-                }
-            }
-            else
-            {
-                vec[r] = -comp.n2.voltage;
-            }
-        }
-        return [mat,vec];
-    }
-    solve()
+
+circ.push(createResistor(Matrix.vec(0,1)));
+
+
+/**
+ * @typedef Component
+ * @type {Object}
+ * @property {Uint16Array} nodes - Indices of the input and output nodes
+ * @property {Float32Array} ivMat - Matrix transforming unknown and 1 to voltage and current.
+ */
+
+/*
+In
+Component Unknowns...
+Node Voltages...
+
+Matrix
+Node Volt Drop - Component Volt Drop = 0
+Node current sum = 0
+
+Out
+0
+0
+...
+1
+*/
+function createCircMat(components,nodeCount)
+{
+    let size = components.length + nodeCount+1;
+    let outMat = Matrix.mat(size);
+    let one = size-1;
+    
+    for(let i = 0; i < components.length; i++)
     {
-        let lin = circ.getLinear();
-        Matrix.invert(lin[0],lin[0]);
-        let out = Matrix.mulVec(lin[0],lin[1])
-        let rC = 0;
-        let vC = 0;
-        let iC = 0;
-        for(let i = 0; i < this.components.length; i++)
+        /**@type {Component} */
+        let comp = components[i];
+        //Node Voltage Drop
+        for(let i = 0; i < 2; i++)
         {
-            let str = "";
-            let comp = this.components[i];
-            if(comp.type == 0)
+            let node = comp.nodes[i];
+            if(node != 0)
             {
-                rC++;
-                console.log("Resistor "+rC+", "+comp.val+" Ohms: "+Circuit.formatValue(out[i])+"A");
-            }
-            if(comp.type==1)
-            {
-                vC++;
-                console.log("Voltage Supply "+vC+", "+comp.val+" Volts: "+Circuit.formatValue(out[i])+"A");
-            }
-            if(comp.type==2)
-            {
-                iC++;
-                console.log("Current Supply "+iC+", "+comp.val+" Amps: "+Circuit.formatValue(out[i])+"V");
+                node --;
+                let nodeX = node + components.length;
+                Matrix.setElement(outMat,nodeX,i,1+i*-2);
             }
         }
-        console.log("\n");
-        for(let i = 0; i < this.nodes.length; i++)
-        {
-            let str = "";
-            let node = this.nodes[i];
-            console.log("Node "+i+": "+Circuit.formatValue(out[i+this.components.length])+"V")
-        }
-        // Matrix.logVec(out);
-            
-    }
-    static formatValue(x)
-    {
-        let prefixes = ["","m","u","n","p"];
-        let scale = Math.ceil(-Math.log(Math.abs(x))/Math.log(1000));
-        if(scale>0)
-        {
-            return x*(1000**scale)+prefixes[scale];
-        }
-        else
-        {
-            return x;
-        }
+
+        //Component Voltage Drop
+        Matrix.setElement(outMat,i,i,comp.ivMat[1]);
+        //Component Voltage Drop
+        Matrix.setElement(outMat,i,i,comp.ivMat[1]);
+
     }
 }
 
-let circ = new Circuit();
-let vin = circ.createNode(true,5);
-let n1 = circ.createNode(false);
-let n2 = circ.createNode(false);
-let n3 = circ.createNode(false);
-let gnd = circ.createNode(true,0);
 
+/*
+ivMat:
+In: unknown, 1
+Out: voltage, current
+*/
 
-circ.createCurrentSupply(n1,n3,1);
-circ.createVoltageSupply(n3,gnd,8);
+/**
+ * @param {Uint16Array} nodes Indices of in input and output nodes
+ * @param {Uint16Array} resistance Resistance of the resistor
+ * @type {Component}
+ */
+function createResistor(nodes = new Uint16Array(0,0),resistance=0.0)
+{
+    let ivMat = Matrix.mat(2);
+    Matrix.setElement(ivMat,0,0,resistance);
+    Matrix.setElement(ivMat,1,0,0);
+    Matrix.setElement(ivMat,0,0,1);
+    Matrix.setElement(ivMat,1,0,0);
+    
 
-circ.createResistor(vin,n1,134);
-circ.createResistor(n1,gnd,50);
-circ.createResistor(n1,n2,1000);
-
-circ.createResistor(vin,n2,1);
-circ.createVoltageSupply(n2,gnd,4.9);
-
-circ.solve();
-// circ.createResistor(n1,n2,42);
-// circ.createResistor(n1,n3,1000);
-// circ.createCurrentSupply(n2,n3,4.2);
-// circ.createResistor(n2,gnd,200);
-// circ.createResistor(n3,gnd,300);
-
+    return {nodes:nodes,ivMat:ivMat};
+}
