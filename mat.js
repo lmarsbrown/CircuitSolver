@@ -189,6 +189,12 @@ class Matrix
     {
         mat[x+y*Math.sqrt(mat.length)]=val;
     }
+
+    static addElement(mat,x,y,val)
+    {
+        mat[x+y*Math.sqrt(mat.length)]+=val;
+    }
+
     /**
      * @param {Float32Array} src source mat
      * @param {Float32Array} dst dest mat
