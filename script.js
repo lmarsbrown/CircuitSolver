@@ -1,153 +1,300 @@
-let circ = [];
+let can = document.createElement("canvas");
+const canW = 600;
+const canH = 600;
+can.width = canW;
+can.height = canH;
+document.body.appendChild(can);
+let ctx = can.getContext("2d");
+
+const gridW = 10;
+const gridH = 10;
+var grid = new Uint16Array(gridW*gridH);
 
 
-circ.push(createResistor(Matrix.vec(0,1),1000));
-circ.push(createCurrentSrc(Matrix.vec(0,1),0.1));
-circ.push(createResistor(Matrix.vec(1,2),200));
-circ.push(createResistor(Matrix.vec(2,0),890));
+let comps = [
+    newVSrc    (Matrix.vec(2,4),Matrix.vec(2,2),5),
+    newResistor(Matrix.vec(2,2),Matrix.vec(4,2),100),
+    newResistor(Matrix.vec(4,2),Matrix.vec(5,4),100)
+];
+var currentNode = 2;
 
-let mat = findCircuitMat(circ,3);
-Matrix.logMat(mat);
-Matrix.invert(mat,mat);
-let inVec = getOutVec(4,3);
-let out = Matrix.mulVec(mat,inVec);
-Matrix.logVec(out)
+let endMap = [];
 
-
-
-
-/**
- * @typedef Component
- * @type {Object}
- * @property {Uint16Array} nodes - Indices of the input and output nodes
- * @property {Float32Array} ivMat - Matrix transforming unknown and 1 to voltage and current.
- */
-
-/*
-In
-Component Unknowns...
-Node Voltages...
-
-Matrix
-Node Volt Drop - Component Volt Drop = 0
-Node current sum = 0
-
-Out
-0
-0
-...
-1
-*/
+setRefNode(2,4);
+setRefNode(5,4);
+populateNodes();
+populateEndMap();
+draw();
+let solved = Solver.solve(comps,currentNode-1);
+Matrix.logVec(solved);
 
 
-/**
- * @param {Number} componentCount Number of components in the circuit
- * @param {Number} nodeCount Number of nodes in the circuit including the reference node. 
- * @type {Float32Array}
- */
-function getOutVec(componentCount,nodeCount)
-{
-    let size = componentCount + nodeCount;
-    let outVec = Matrix.vec(size);
-    outVec[size-1] = 1;
-    return outVec;
-}
-/**
- * @param {Component[]} components Components in the circuit
- * @param {Number} nodeCount Number of nodes in the circuit including the reference node. 
- * @type {Float32Array}
- */
-function findCircuitMat(components,nodeCount)
-{
-    let size = components.length + nodeCount;
-    let outMat = Matrix.mat(size);
-    let one = size-1;
-    Matrix.setElement(outMat,one,one,1);
-    
-    for(let i = 0; i < components.length; i++)
+let currentHover;
+
+let mouse = {x:0,y:0,down:false}
+can.addEventListener("mousemove",(event)=>{
+    if(!mouse.down)
     {
-        /**@type {Component} */
-        let comp = components[i];
+        mouseHover(event);
+    }
+    else
+    {
+        dragNode(event);
+    }
+});
+can.addEventListener("mousedown",()=>{
+    mouse.down = true;
+});
+can.addEventListener("mouseup",()=>{
+    mouse.down = false;
+});
 
-        //Nodes
-        for(let n = 0; n < 2; n++)
+function dragNode(event)
+{
+
+    let gridPos = getGridPos(event.offsetX,event.offsetY);
+    let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
+    let roundScreenPos = getScreenPos(roundPos[0],roundPos[1]);
+
+    if(currentHover != undefined)
+    {
+        if(currentHover[1] == 0)
         {
-            let node = comp.nodes[n];
-            if(node != 0)
-            {
-                node --;
-                let nodeI = node + components.length;
-                //Node voltage drop
-                Matrix.addElement(outMat,nodeI,i,1+n*-2);
+            currentHover[0].p1 = roundPos;
+            draw();
+        }
+        else
+        {
+            currentHover[0].p2 = roundPos;
+            draw();
+        }
+    }
+}
 
-                //Node current
-                //Current Unknown
-                Matrix.addElement(outMat, i  , nodeI, comp.ivMat[2]*(1+n*-2));
-                Matrix.addElement(outMat, one, nodeI, comp.ivMat[3]*(1+n*-2));
+function mouseHover(event)
+{
+
+    let gridPos = getGridPos(event.offsetX,event.offsetY);
+    let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
+    let roundScreenPos = getScreenPos(roundPos[0],roundPos[1]);
+    document.getElementById("mousething").innerText  = "rX: "+roundPos[0]+", "+"rY: "+roundPos[1]+"\n";
+    // document.getElementById("mousething").innerText += "X: " +event.offsetX+ ", "+"Y: "+event.offsetY+"\n";
+    draw();
+    if(Math.abs(roundScreenPos[0]-event.offsetX)<5&&Math.abs(roundScreenPos[1]-event.offsetY)<5)
+    {
+        //Is on a node
+        let localNode = accessGridNode(roundPos[0],roundPos[1])
+        if(localNode != 0)
+        {
+            if(localNode>1)
+            {
+                ctx.fillStyle = `rgb(0,0,255)`;
+                drawGridNode(roundPos[0],roundPos[1],8);
+            }
+            if(localNode==1)
+            {
+                ctx.fillStyle = `rgb(100,100,100)`;
+                drawGridNode(roundPos[0],roundPos[1],8);
+            }
+            currentHover = endMap[roundPos[0]][roundPos[1]][0];
+        }
+        else
+        {
+            currentHover = undefined;
+        }
+    }
+    else
+    {
+        currentHover = undefined;
+    }
+}
+
+
+function draw()
+{
+    clear();
+    for(let i = 0; i < gridW*gridH; i++)
+    {
+        grid[i] = 0;
+    }
+    populateNodes();
+    drawComponents();
+    drawGrid();
+}
+
+
+function newResistor(p1,p2,resistance)
+{
+    let c = Solver.createResistor(Matrix.vec(0,0),resistance);
+    
+    c.name = "Resistor";
+    c.type = 0;
+    c.unknownUnit = "A";
+    c.valUnit = "Ohm";
+    c.p1 = p1;
+    c.p2 = p2;
+    
+    return c;
+}
+
+function setRefNode(x,y)
+{
+    grid[x+y*gridW] = 1;
+}
+
+function populateNodes()
+{
+    for(let i = 0; i < comps.length; i++)
+    {
+        comps[i].nodes[0] = getGridNode(comps[i].p1[0],comps[i].p1[1]);
+        comps[i].nodes[1] = getGridNode(comps[i].p2[0],comps[i].p2[1]);
+    }
+}
+
+function populateEndMap()
+{
+    for(let i = 0; i < comps.length; i++)
+    {
+        let p1 = comps[i].p1;
+        let p2 = comps[i].p2;
+        let pl = [p1,p2];
+        for(let j = 0; j < 2; j++)
+        {
+            let p = pl[j];
+            Matrix.logVec(p)
+            console.log(comps[i])
+
+            if(endMap[p[0]] == undefined)
+            {
+                endMap[p[0]] = [];
+            }
+
+            if(endMap[p[0]][p[1]] == undefined)
+            {
+                endMap[p[0]][p[1]] = [];
+            }
+            console.log(endMap[p[0]][p[1]]);
+            endMap[p[0]][p[1]].push([comps[i],j]);
+        }       
+    }
+}
+function getGridNode(x,y)
+{
+    let node = grid[x+y*gridW];
+    if(node==0)
+    {
+        grid[x+y*gridW] = currentNode;
+        currentNode++;
+        return currentNode - 2;
+    }
+    else
+    {
+        return node-1;
+    }
+}
+function accessGridNode(x,y)
+{
+    return  grid[x+y*gridW];
+}
+
+function getScreenPos(x,y)
+{
+    return [(x+1)*(canW)/(gridW+1),(y+1)*(canH)/(gridH+1)];
+}
+
+function getGridPos(x,y)
+{
+    
+    return [x*(gridW+1)/(canW)-1,y*(gridH+1)/(canH)-1];
+}
+
+function clear()
+{
+    ctx.clearRect(0,0,canW,canH);
+    ctx.fillStyle = `black`;
+    ctx.fillRect(0,0,canW,canH);
+}
+
+function drawGridNode(x,y,rad)
+{
+    let coord = getScreenPos(x,y);
+    ctx.fillRect(coord[0]-rad,coord[1]-rad,rad*2,rad*2);
+}
+function drawGrid()
+{
+    for(let y = 0; y < gridH; y++)
+    {
+        for(let x = 0; x < gridW; x++)
+        {
+            if(accessGridNode(x,y) > 1)
+            {
+                ctx.fillStyle = `rgb(0,0,255)`;
+                drawGridNode(x,y,5);
+            }
+            if(accessGridNode(x,y) == 1)
+            {
+                ctx.fillStyle = `rgb(100,100,100)`;
+                drawGridNode(x,y,5);
             }
         }
-
-        //Component Voltage Drop
-        //Resistive
-        Matrix.addElement(outMat,i,i,-comp.ivMat[0]);
-        //Constant
-        Matrix.addElement(outMat,one,i,-comp.ivMat[1]);
-
     }
-    return outMat;
 }
 
-
-/*
-ivMat:
-In: unknown, 1
-Out: voltage, current
-*/
-
-/**
- * @param {Uint16Array} nodes Indices of in input and output nodes
- * @param {Number} resistance Resistance of the resistor
- * @type {Component}
- */
-function createResistor(nodes,resistance)
+function drawComponents()
 {
-    let ivMat = Matrix.mat(2);
-    ivMat[0] = resistance;
-    ivMat[1] = 0;
-    ivMat[2] = 1;
-    ivMat[3] = 0;
-    
-
-    return {nodes:nodes,ivMat:ivMat};
-}
-/**
- * @param {Uint16Array} nodes Indices of in input and output nodes
- * @param {Uint16Array} voltage Voltage of the Voltage Source
- * @type {Component}
- */
-function createVoltageSrc(nodes,voltage)
-{
-    let ivMat = Matrix.mat(2);
-    ivMat[0] = 0;
-    ivMat[1] = -voltage;
-    ivMat[2] = 1;
-    ivMat[3] = 0;
-    
-    return {nodes:nodes,ivMat:ivMat};
+    for(let i = 0; i < comps.length; i++)
+    {
+        drawComponent(comps[i]);
+    }
 }
 
-/**
- * @param {Uint16Array} nodes Indices of in input and output nodes
- * @param {Uint16Array} current Current of the Current Source
- * @type {Component}
- */
-function createCurrentSrc(nodes,current)
+function drawComponent(comp)
 {
-    let ivMat = Matrix.mat(2);
-    ivMat[0] = 1;
-    ivMat[1] = 0;
-    ivMat[2] = 0;
-    ivMat[3] = current;
+    let start = getScreenPos(comp.p1[0],comp.p1[1]);
+    let end = getScreenPos(comp.p2[0],comp.p2[1]);
+    // let diff = Matrix.subVecs(comp.p1,comp.p0);
+    // diff = Matrix.scaleVec(diff,1/3);
+    // let perpDiff;
+
+    if(comp.type == 0)
+    {
+        ctx.strokeStyle=`rgb(255,100,50)`;
+    }
+    else if(comp.type == 1)
+    {
+        ctx.strokeStyle=`rgb(100,255,50)`;
+    }
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(start[0],start[1]);
+    ctx.lineTo(end[0],end[1]);
+    ctx.stroke();
+}
+
+function newResistor(p1,p2,resistance)
+{
+    let c = Solver.createResistor(Matrix.vec(0,0),resistance);
     
-    return {nodes:nodes,ivMat:ivMat};
+    c.name = "Resistor";
+    c.type = 0;
+    c.unknownUnit = "A";
+    c.valUnit = "Ohm";
+    c.p1 = p1;
+    c.p2 = p2;
+    
+    return c;
+}
+
+function newVSrc(p1,p2,voltage)
+{
+    let c = Solver.createVoltageSrc(Matrix.vec(0,0),voltage);
+    
+    c.name = "Voltage Source";
+    c.type = 1;
+    c.unknownUnit = "A";
+    c.valUnit = "V";
+    c.p1 = p1;
+    c.p2 = p2;
+
+    return c;
 }
