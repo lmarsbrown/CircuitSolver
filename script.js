@@ -6,8 +6,8 @@ can.height = canH;
 document.body.appendChild(can);
 let ctx = can.getContext("2d");
 
-const gridW = 10;
-const gridH = 10;
+const gridW = 20;
+const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
 
 
@@ -18,12 +18,14 @@ let comps = [
 ];
 var currentNode = 2;
 
-let endMap = [];
-
 setRefNode(2,4);
 setRefNode(5,4);
+
+let refNodes = [
+    Matrix.vec(2,4),
+    Matrix.vec(5,4)
+];
 populateNodes();
-populateEndMap();
 draw();
 let solved = Solver.solve(comps,currentNode-1);
 Matrix.logVec(solved);
@@ -49,35 +51,13 @@ can.addEventListener("mouseup",()=>{
     mouse.down = false;
 });
 
-function dragNode(event)
-{
-
-    let gridPos = getGridPos(event.offsetX,event.offsetY);
-    let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
-    let roundScreenPos = getScreenPos(roundPos[0],roundPos[1]);
-
-    if(currentHover != undefined)
-    {
-        if(currentHover[1] == 0)
-        {
-            currentHover[0].p1 = roundPos;
-            draw();
-        }
-        else
-        {
-            currentHover[0].p2 = roundPos;
-            draw();
-        }
-    }
-}
-
 function mouseHover(event)
 {
-
     let gridPos = getGridPos(event.offsetX,event.offsetY);
+    let end = getComponentEnd(gridPos);
     let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
     let roundScreenPos = getScreenPos(roundPos[0],roundPos[1]);
-    document.getElementById("mousething").innerText  = "rX: "+roundPos[0]+", "+"rY: "+roundPos[1]+"\n";
+    // document.getElementById("mousething").innerText  = "rX: "+roundPos[0]+", "+"rY: "+roundPos[1]+"\n";
     // document.getElementById("mousething").innerText += "X: " +event.offsetX+ ", "+"Y: "+event.offsetY+"\n";
     draw();
     if(Math.abs(roundScreenPos[0]-event.offsetX)<5&&Math.abs(roundScreenPos[1]-event.offsetY)<5)
@@ -96,7 +76,8 @@ function mouseHover(event)
                 ctx.fillStyle = `rgb(100,100,100)`;
                 drawGridNode(roundPos[0],roundPos[1],8);
             }
-            currentHover = endMap[roundPos[0]][roundPos[1]][0];
+            currentHover = getComponentEnd(gridPos);
+            console.log(currentHover);
         }
         else
         {
@@ -109,14 +90,90 @@ function mouseHover(event)
     }
 }
 
+function getComponentEnd(gridPos)
+{
+    let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
+    let node = accessGridNode(roundPos[0],roundPos[1]);
+
+    for(let i = 0; i < comps.length; i++)
+    {
+        for(let j = 0; j < 2; j++)
+        {
+            if(comps[i].nodes[j] == node-1)
+            {
+                return [i,j];
+            }
+        }
+    }
+}
+
+
+
+// function mouseHover(event)
+// {
+
+//     let gridPos = getGridPos(event.offsetX,event.offsetY);
+//     let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
+//     let roundScreenPos = getScreenPos(roundPos[0],roundPos[1]);
+//     document.getElementById("mousething").innerText  = "rX: "+roundPos[0]+", "+"rY: "+roundPos[1]+"\n";
+//     // document.getElementById("mousething").innerText += "X: " +event.offsetX+ ", "+"Y: "+event.offsetY+"\n";
+//     draw();
+//     if(Math.abs(roundScreenPos[0]-event.offsetX)<5&&Math.abs(roundScreenPos[1]-event.offsetY)<5)
+//     {
+//         //Is on a node
+//         let localNode = accessGridNode(roundPos[0],roundPos[1])
+//         if(localNode != 0)
+//         {
+//             if(localNode>1)
+//             {
+//                 ctx.fillStyle = `rgb(0,0,255)`;
+//                 drawGridNode(roundPos[0],roundPos[1],8);
+//             }
+//             if(localNode==1)
+//             {
+//                 ctx.fillStyle = `rgb(100,100,100)`;
+//                 drawGridNode(roundPos[0],roundPos[1],8);
+//             }
+//             currentHover = endMap[roundPos[0]][roundPos[1]][0];
+//         }
+//         else
+//         {
+//             currentHover = undefined;
+//         }
+//     }
+//     else
+//     {
+//         currentHover = undefined;
+//     }
+// }
+
+function dragNode(event)
+{
+
+    let gridPos = getGridPos(event.offsetX,event.offsetY);
+    let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
+    let roundScreenPos = getScreenPos(roundPos[0],roundPos[1]);
+
+    if(currentHover != undefined)
+    {
+        if(currentHover[1] == 0)
+        {
+            comps[currentHover[0]].p1 = roundPos;
+            draw();
+        }
+        else
+        {
+            comps[currentHover[0]].p2 = roundPos;
+            draw();
+        }
+    }
+}
+
+
 
 function draw()
 {
     clear();
-    for(let i = 0; i < gridW*gridH; i++)
-    {
-        grid[i] = 0;
-    }
     populateNodes();
     drawComponents();
     drawGrid();
@@ -137,13 +194,22 @@ function newResistor(p1,p2,resistance)
     return c;
 }
 
-function setRefNode(x,y)
+function setRefNode(vec)
 {
-    grid[x+y*gridW] = 1;
+    grid[vec[0]+vec[1]*gridW] = 1;
 }
 
 function populateNodes()
 {
+    currentNode = 2;
+    for(let i = 0; i < gridW*gridH; i++)
+    {
+        grid[i] = 0;
+    }
+    for(let i = 0; i < refNodes.length; i++)
+    {
+        setRefNode(refNodes[i]);
+    }
     for(let i = 0; i < comps.length; i++)
     {
         comps[i].nodes[0] = getGridNode(comps[i].p1[0],comps[i].p1[1]);
@@ -151,33 +217,6 @@ function populateNodes()
     }
 }
 
-function populateEndMap()
-{
-    for(let i = 0; i < comps.length; i++)
-    {
-        let p1 = comps[i].p1;
-        let p2 = comps[i].p2;
-        let pl = [p1,p2];
-        for(let j = 0; j < 2; j++)
-        {
-            let p = pl[j];
-            Matrix.logVec(p)
-            console.log(comps[i])
-
-            if(endMap[p[0]] == undefined)
-            {
-                endMap[p[0]] = [];
-            }
-
-            if(endMap[p[0]][p[1]] == undefined)
-            {
-                endMap[p[0]][p[1]] = [];
-            }
-            console.log(endMap[p[0]][p[1]]);
-            endMap[p[0]][p[1]].push([comps[i],j]);
-        }       
-    }
-}
 function getGridNode(x,y)
 {
     let node = grid[x+y*gridW];
