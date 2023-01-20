@@ -45,7 +45,6 @@ function getScreenPos(pos)
 }
 function getGridPos(pos)
 {
-    
     return [pos[0]*(gridW+1)/(canW)-1,pos[1]*(gridH+1)/(canH)-1];
 }
 
@@ -114,77 +113,89 @@ function evalCircuit()
 
 function mouseHover(event)
 {
-    let gridPos = getGridPos(Matrix.vec(event.offsetX,event.offsetY));
-    let end = getComponentEnd(gridPos);
-    // console.log(end)
+    let screenPos = Matrix.vec(event.offsetX,event.offsetY);
+    let gridPos = getGridPos(screenPos);
     let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
     let roundScreenPos = getScreenPos(Matrix.vec(roundPos[0],roundPos[1]));
-    
-    // document.getElementById("mousething").innerText  = "rX: "+roundPos[0]+", "+"rY: "+roundPos[1]+"\n";
-    // document.getElementById("mousething").innerText += "X: " +event.offsetX+ ", "+"Y: "+event.offsetY+"\n";
-    draw();
-    // console.log(Math.abs(roundScreenPos[0]-event.offsetX))
-    // console.log(roundPos)
-    if(Math.abs(roundScreenPos[0]-event.offsetX)<5&&Math.abs(roundScreenPos[1]-event.offsetY)<5)
-    {
-        //Is on a node
-        let localNode = getGridNode(roundPos[0],roundPos[1])
-        // console.log(currentHover);
-        if(localNode != 0)
-        {
-            if(localNode>1)
-            {
-                ctx.fillStyle = `rgb(0,0,255)`;
-                drawGridNode(roundPos[0],roundPos[1],8);
-            }
-            if(localNode==1)
-            {
-                ctx.fillStyle = `rgb(100,100,100)`;
-                drawGridNode(roundPos[0],roundPos[1],8);
-            }
-            currentHover = getComponentEnd(gridPos);
-        }
-        else
-        {
-            currentHover = undefined;
-        }
-    }
-    else
-    {
-        currentHover = undefined;
-    }
-}
 
-function getComponentEnd(gridPos)
-{
-    let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
-    let node = getGridNode(roundPos[0],roundPos[1]);
+    let positions = {screenPos:screenPos,gridPos:gridPos,roundPos:roundPos,roundScreenPos:roundScreenPos};
 
+    currentHover = undefined;
     for(let i = 0; i < comps.length; i++)
     {
         let c = comps[i];
-        for(let j = 0; j < c.connections.length; j++)
+        let hover = c.getHovering(positions);
+        if(hover != undefined)
         {
-            if(c.connections[j][0] == node-1)
-            {
-                return [i,j];
-            }
+            currentHover = [i,hover];
+            break;
         }
     }
+    let localNode = getGridNode(roundPos[0],roundPos[1])
+    // console.log(currentHover);
+    draw();
+    if(localNode != 0)
+    {
+        if(localNode>1)
+        {
+            ctx.fillStyle = `rgb(0,0,255)`;
+            drawGridNode(roundPos[0],roundPos[1],8);
+        }
+        if(localNode==1)
+        {
+            ctx.fillStyle = `rgb(100,100,100)`;
+            drawGridNode(roundPos[0],roundPos[1],8);
+        }
+    }
+
+    // draw();
+    // // console.log(Math.abs(roundScreenPos[0]-event.offsetX))
+    // // console.log(roundPos)
+    // if(Math.abs(roundScreenPos[0]-event.offsetX)<5&&Math.abs(roundScreenPos[1]-event.offsetY)<5)
+    // {
+    //     //Is on a node
+    //     let localNode = getGridNode(roundPos[0],roundPos[1])
+    //     // console.log(currentHover);
+    //     if(localNode != 0)
+    //     {
+    //         if(localNode>1)
+    //         {
+    //             ctx.fillStyle = `rgb(0,0,255)`;
+    //             drawGridNode(roundPos[0],roundPos[1],8);
+    //         }
+    //         if(localNode==1)
+    //         {
+    //             ctx.fillStyle = `rgb(100,100,100)`;
+    //             drawGridNode(roundPos[0],roundPos[1],8);
+    //         }
+    //         currentHover = getComponentEnd(gridPos);
+    //     }
+    //     else
+    //     {
+    //         currentHover = undefined;
+    //     }
+    // }
+    // else
+    // {
+    //     currentHover = undefined;
+    // }
 }
 
 function dragNode(event)
 {
-
-    let gridPos = getGridPos(Matrix.vec(event.offsetX,event.offsetY));
-    let roundPos = Matrix.vec(Math.round(gridPos[0]),Math.round(gridPos[1]));
-
-    if(currentHover != undefined)
+    if(currentHover!=undefined)
     {
-        comps[currentHover[0]].connections[currentHover[1]][1][0] = roundPos[0];
-        comps[currentHover[0]].connections[currentHover[1]][1][1] = roundPos[1];
+        let screenPos = Matrix.vec(event.offsetX,event.offsetY);
+        let gridPos = getGridPos(screenPos);
+        let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
+        let roundScreenPos = getScreenPos(Matrix.vec(roundPos[0],roundPos[1]));
+    
+        let positions = {screenPos:screenPos,gridPos:gridPos,roundPos:roundPos,roundScreenPos:roundScreenPos};
+    
+        comps[currentHover[0]].drag(positions,currentHover[1]);
+        
+        draw();
     }
-    draw();
 }
 
 let can = document.createElement("canvas");

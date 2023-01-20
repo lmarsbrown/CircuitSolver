@@ -45,6 +45,56 @@ class VoltageSource
         ctx.lineTo(end[0],end[1]);
         ctx.stroke();
     }
+
+    /**
+     * @param {MousePositions}positions
+     */
+    getHovering(positions)
+    {
+        if(Matrix.vecDist(positions.screenPos,positions.roundScreenPos)<8)
+        {
+            for(let i = 0; i < this.connections.length; i++)
+            {
+                if(Matrix.vecDist(positions.gridPos,this.connections[i][1]) < 0.1)
+                {
+                    return i;
+                }
+            }
+        }
+        return undefined;
+    }
+    /**
+     * @param {MousePositions}positions
+     */
+    drag(positions,conn)
+    {
+        Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
+    }
+
+    /**
+     * @param {MousePositions}positions
+     */
+    getHovering(positions)
+    {
+        if(Matrix.vecDist(positions.screenPos,positions.roundScreenPos)<12)
+        {
+            for(let i = 0; i < this.connections.length; i++)
+            {
+                if(Matrix.vecDist(positions.roundPos,this.connections[i][1]) < 0.1)
+                {
+                    return i;
+                }
+            }
+        }
+        return undefined;
+    }
+    /**
+     * @param {MousePositions}positions
+     */
+    drag(positions,conn)
+    {
+        Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
+    }
 }
 
 class Resistor
@@ -92,13 +142,43 @@ class Resistor
         ctx.lineTo(end[0],end[1]);
         ctx.stroke();
     }
-    getHovering(screenPos,getGridPos,getScreenPos)
+
+    /**
+     * 
+     * @typedef MousePositions
+     * @type {Object}
+     * @property {Float32Array} gridPos
+     * @property {Float32Array} roundPos
+     * @property {Float32Array} screenPos
+     * @property {Float32Array} roundScreenPos
+     */
+
+    /**
+     * @param {MousePositions}positions
+     */
+    getHovering(positions)
     {
-        let gridPos = getGridPos(screenPos);
-        let roundGridPos = Matrix.vec(Math.round(gridPos[0]),Math.round(gridPos[1]));
-        let roundScreenPos = getScreenPos(roundGridPos);
+        if(Matrix.vecDist(positions.screenPos,positions.roundScreenPos)<12)
+        {
+            for(let i = 0; i < this.connections.length; i++)
+            {
+                if(Matrix.vecDist(positions.roundPos,this.connections[i][1]) < 0.1)
+                {
+                    return i;
+                }
+            }
+        }
+        return undefined;
+    }
+    /**
+     * @param {MousePositions}positions
+     */
+    drag(positions,conn)
+    {
+        Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
     }
 }
+
 
 class Ground
 {
@@ -134,5 +214,31 @@ class Ground
 
         ctx.fillStyle=`rgb(100,100,100)`;
         ctx.fillRect(loc[0]-10,loc[1]-10,20,20);
+    }
+
+
+    /**
+     * @param {MousePositions}positions
+     */
+    getHovering(positions)
+    {
+        if(Matrix.vecDist(positions.screenPos,positions.roundScreenPos)<12)
+        {
+            for(let i = 0; i < this.connections.length; i++)
+            {
+                if(Matrix.vecDist(positions.roundPos,this.connections[i][1]) < 0.1)
+                {
+                    return i;
+                }
+            }
+        }
+        return undefined;
+    }
+    /**
+     * @param {MousePositions}positions
+     */
+    drag(positions,conn)
+    {
+        Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
     }
 }
