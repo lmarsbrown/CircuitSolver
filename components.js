@@ -73,7 +73,7 @@ class Resistor
         let start = getScreenPos(p1);
 
         let end = getScreenPos(p2);
-        console.log(p1,end);
+        // console.log(p1,end);
         
         ctx.strokeStyle=`rgb(255,100,50)`;
 
