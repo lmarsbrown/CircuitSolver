@@ -17,6 +17,9 @@ class VoltageSource
         ivMat[2] = 1;
         ivMat[3] = 0;
         
+        this.v = 0;
+        this.i = 0;
+        
 
         this.simple = {nodes:[0,0],ivMat:ivMat};
     }
@@ -27,11 +30,14 @@ class VoltageSource
     }
     draw(getScreenPos)
     {
+        let p1 = this.connections[0][1];
+        let p2 = this.connections[1][1];
+        let start = getScreenPos(p1);
+
+        let end = getScreenPos(p2);
+        // console.log(p1,end);
         
-        let start = getScreenPos(comp.p1[0],comp.p1[1]);
-        let end = getScreenPos(comp.p2[0],comp.p2[1]);
-        
-        ctx.strokeStyle=`rgb(255,100,50)`;
+        ctx.strokeStyle=`rgb(0,255,50)`;
 
         ctx.lineWidth = 5;
         ctx.beginPath();
@@ -58,6 +64,9 @@ class Resistor
         ivMat[2] = 1;
         ivMat[3] = 0;
         
+        this.v = 0;
+        this.i = 0;
+        
 
         this.simple = {nodes:[0,0],ivMat:ivMat};
     }
@@ -82,5 +91,48 @@ class Resistor
         ctx.moveTo(start[0],start[1]);
         ctx.lineTo(end[0],end[1]);
         ctx.stroke();
+    }
+    getHovering(screenPos,getGridPos,getScreenPos)
+    {
+        let gridPos = getGridPos(screenPos);
+        let roundGridPos = Matrix.vec(Math.round(gridPos[0]),Math.round(gridPos[1]));
+        let roundScreenPos = getScreenPos(roundGridPos);
+    }
+}
+
+class Ground
+{
+    constructor(position)
+    {
+        
+
+        this.connections = [
+            [0,position]
+        ];
+
+        let ivMat = Matrix.mat(2);
+        ivMat[0] = 0;
+        ivMat[1] = 0;
+        ivMat[2] = 1;
+        ivMat[3] = 0;
+        
+        this.v = 0;
+        this.i = 0;
+        
+
+        this.simple = {nodes:[0,0],ivMat:ivMat};
+    }
+    updateSimple() 
+    {
+        this.simple.nodes[0] = this.connections[0][0];
+        this.simple.nodes[1] = 0;
+    }
+    draw(getScreenPos)
+    {
+        let p = this.connections[0][1];
+        let loc = getScreenPos(p);
+
+        ctx.fillStyle=`rgb(100,100,100)`;
+        ctx.fillRect(loc[0]-10,loc[1]-10,20,20);
     }
 }

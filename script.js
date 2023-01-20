@@ -43,12 +43,12 @@ function getScreenPos(pos)
 {
     return [(pos[0]+1)*(canW)/(gridW+1),(pos[1]+1)*(canH)/(gridH+1)];
 }
-
 function getGridPos(pos)
 {
     
     return [pos[0]*(gridW+1)/(canW)-1,pos[1]*(gridH+1)/(canH)-1];
 }
+
 function draw()
 {
     clear();
@@ -93,6 +93,24 @@ function getGridNode(x,y)
     return  grid[x+y*gridW];
 }
 
+function evalCircuit()
+{
+    populateNodes();
+    let simples = [];
+    for(let i = 0; i < comps.length; i++)
+    {
+        comps[i].updateSimple();
+        simples.push(comps[i].simple);
+    }
+    let solu = Solver.solve(simples,currentNode-1);
+    for(let i = 0; i < simples.length; i++)
+    {
+        let uVec = Matrix.vec(solu[i],1);
+        let ivVec = Matrix.mulVec(simples[i].ivMat,uVec);
+        comps[i].v = ivVec[0];
+        comps[i].i = ivVec[1];
+    }
+}
 
 function mouseHover(event)
 {
@@ -101,6 +119,7 @@ function mouseHover(event)
     // console.log(end)
     let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
     let roundScreenPos = getScreenPos(Matrix.vec(roundPos[0],roundPos[1]));
+    
     // document.getElementById("mousething").innerText  = "rX: "+roundPos[0]+", "+"rY: "+roundPos[1]+"\n";
     // document.getElementById("mousething").innerText += "X: " +event.offsetX+ ", "+"Y: "+event.offsetY+"\n";
     draw();
@@ -157,23 +176,15 @@ function getComponentEnd(gridPos)
 function dragNode(event)
 {
 
-    let gridPos = getGridPos(event.offsetX,event.offsetY);
-    let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
-    let roundScreenPos = getScreenPos(roundPos[0],roundPos[1]);
+    let gridPos = getGridPos(Matrix.vec(event.offsetX,event.offsetY));
+    let roundPos = Matrix.vec(Math.round(gridPos[0]),Math.round(gridPos[1]));
 
     if(currentHover != undefined)
     {
-        if(currentHover[1] == 0)
-        {
-            comps[currentHover[0]].p1 = roundPos;
-            draw();
-        }
-        else
-        {
-            comps[currentHover[0]].p2 = roundPos;
-            draw();
-        }
+        comps[currentHover[0]].connections[currentHover[1]][1][0] = roundPos[0];
+        comps[currentHover[0]].connections[currentHover[1]][1][1] = roundPos[1];
     }
+    draw();
 }
 
 let can = document.createElement("canvas");
@@ -210,6 +221,8 @@ let mouse = {x:0,y:0,down:false};
 let comps = [
     new Resistor(100,Matrix.vec(2,2),Matrix.vec(4,4)),
     new Resistor(200,Matrix.vec(4,4),Matrix.vec(4,6)),
+    new VoltageSource(5,Matrix.vec(4,6),Matrix.vec(4,8)),
+    new Ground(Matrix.vec(7,7))
 ];
 var currentNode = 2;
 
