@@ -197,7 +197,6 @@ function dragNode(event)
         draw();
     }
 }
-
 let can = document.createElement("canvas");
 const canW = 600;
 const canH = 600;

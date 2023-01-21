@@ -1,5 +1,26 @@
 
 
+function getSymbolImg(name,callback)
+{
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET","symbols/"+name);
+    xhr.onload = ()=>{
+        let svgDiv = document.createElement("div");
+        svgDiv.innerHTML = xhr.response;
+        let svg = svgDiv.getElementsByTagName("svg")[0];
+        let path = svg.getElementsByTagName("path")[0];
+        let pData = path.getAttribute("d");
+        callback(pData);
+    };
+    xhr.send()
+}
+
+
+getSymbolImg("resistor.svg",(data)=>{
+    Resistor.symbol = new Path2D(data);
+})
+
+
 class VoltageSource
 {
     constructor(voltage)
@@ -99,6 +120,7 @@ class VoltageSource
 
 class Resistor
 {
+    static symbol;
     constructor(resistance,p1,p2)
     {
         
