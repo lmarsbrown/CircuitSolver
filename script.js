@@ -53,7 +53,7 @@ function draw()
     clear();
     populateNodes();
     drawComponents();
-    drawGrid();
+    // drawGrid();
 }
 
 function populateNodes()
@@ -108,6 +108,14 @@ function evalCircuit()
         let ivVec = Matrix.mulVec(simples[i].ivMat,uVec);
         comps[i].v = ivVec[0];
         comps[i].i = ivVec[1];
+
+        for(let j = 0; j < comps[i].connections.length; j++)
+        {
+            if(comps[i].connections[j][0] != 0)
+            {
+                comps[i].connections[j][2] = solu[comps.length+comps[i].connections[j][0]-1]
+            }
+        }
     }
 }
 
@@ -232,7 +240,8 @@ let comps = [
     new Resistor(100,Matrix.vec(2,2),Matrix.vec(4,4)),
     new Resistor(200,Matrix.vec(4,4),Matrix.vec(4,6)),
     new VoltageSource(5,Matrix.vec(4,6),Matrix.vec(4,8)),
-    new Ground(Matrix.vec(7,7))
+    new Ground(Matrix.vec(7,7)),
+    new Wire(Matrix.vec(7,7),Matrix.vec(8,8))
 ];
 var currentNode = 2;
 
