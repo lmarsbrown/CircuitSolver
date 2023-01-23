@@ -133,7 +133,10 @@ class Solver
     static solve(components, nodeCount)
     {
         let mat = Solver.findCircuitMat(components,nodeCount);
-        Matrix.invert(mat,mat);
+        if(!Matrix.invert(mat,mat))
+        {
+            return false;
+        }
 
         let size = components.length + nodeCount;
         let resultVec = Matrix.vec(size);

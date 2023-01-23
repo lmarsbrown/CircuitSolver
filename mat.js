@@ -152,7 +152,8 @@ class Matrix
                     }
                     if(corn == 0 && y >= width-1)
                     {
-                        console.error("MATRIX CANNOT BE SOVLED");
+                        // console.error("MATRIX CANNOT BE SOVLED");
+                        return false;
                     }
                 }
             }
@@ -177,6 +178,7 @@ class Matrix
             }
         }
         Matrix.copyMat(outMat,dst);
+        return true;
     }
 
 

@@ -87,21 +87,33 @@ function populateNodes()
     }
 }
 
+
+var simples = [];
+
 function getGridNode(x,y)
 {
-    return  grid[x+y*gridW];
+    return grid[x+y*gridW];
 }
 
-function evalCircuit()
+function parseCircuit()
 {
     populateNodes();
-    let simples = [];
+    simples = [];
     for(let i = 0; i < comps.length; i++)
     {
         comps[i].updateSimple();
         simples.push(comps[i].simple);
     }
+}
+
+function solveCircuit()
+{
     let solu = Solver.solve(simples,currentNode-1);
+    if(!solu)
+    {
+        return;
+    }
+
     for(let i = 0; i < simples.length; i++)
     {
         let uVec = Matrix.vec(solu[i],1);
@@ -117,6 +129,7 @@ function evalCircuit()
             }
         }
     }
+    draw();
 }
 
 function mouseHover(event)
@@ -199,8 +212,12 @@ function dragNode(event)
         let roundScreenPos = getScreenPos(Matrix.vec(roundPos[0],roundPos[1]));
     
         let positions = {screenPos:screenPos,gridPos:gridPos,roundPos:roundPos,roundScreenPos:roundScreenPos};
-    
-        comps[currentHover[0]].drag(positions,currentHover[1]);
+        let dragSuccess = comps[currentHover[0]].drag(positions,currentHover[1]);
+        if(dragSuccess)
+        {
+            parseCircuit();
+            solveCircuit();
+        }
         
         draw();
     }
@@ -216,33 +233,40 @@ let ctx = can.getContext("2d");
 const gridW = 20;
 const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
-
-can.addEventListener("mousemove",(event)=>{
-    if(!mouse.down)
-    {
-        mouseHover(event);
-    }
-    else
-    {
-        dragNode(event);
-    }
-});
-can.addEventListener("mousedown",()=>{
-    mouse.down = true;
-});
-can.addEventListener("mouseup",()=>{
-    mouse.down = false;
-});
-
-let mouse = {x:0,y:0,down:false};
-
-let comps = [
+var currentNode = 2;
+    
+var comps = [
     new Resistor(100,Matrix.vec(2,2),Matrix.vec(4,4)),
     new Resistor(200,Matrix.vec(4,4),Matrix.vec(4,6)),
     new VoltageSource(5,Matrix.vec(4,6),Matrix.vec(4,8)),
     new Ground(Matrix.vec(7,7)),
     new Wire(Matrix.vec(7,7),Matrix.vec(8,8))
 ];
-var currentNode = 2;
 
-draw();
+
+
+function main()
+{
+
+
+    can.addEventListener("mousemove",(event)=>{
+        if(!mouse.down)
+        {
+            mouseHover(event);
+        }
+        else
+        {
+            dragNode(event);
+        }
+    });
+    can.addEventListener("mousedown",()=>{
+        mouse.down = true;
+    });
+    can.addEventListener("mouseup",()=>{
+        mouse.down = false;
+    });
+    
+    let mouse = {x:0,y:0,down:false};
+    draw();
+}
+

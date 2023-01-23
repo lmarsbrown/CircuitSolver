@@ -15,6 +15,7 @@ function getSymbolImg(name,callback)
             pathsData.push(paths[i].getAttribute("d"));
         }
         callback(pathsData);
+        loadImage();
     };
     xhr.send()
 }
@@ -31,6 +32,17 @@ function getVoltageColor(v)
         return `rgb(${100-v/maxV*155},${100+v/maxV*100},${100+v/maxV*100})`;
     }
 }
+
+var loaded = 0;
+function loadImage()
+{
+    loaded++;
+    if(loaded == 2)
+    {
+        main();
+    }
+}
+
 
 getSymbolImg("resistor.svg",(data)=>{
     Resistor.symbol = new Path2D(data[0]);
@@ -101,31 +113,6 @@ class VoltageSource
      */
     getHovering(positions)
     {
-        if(Matrix.vecDist(positions.screenPos,positions.roundScreenPos)<8)
-        {
-            for(let i = 0; i < this.connections.length; i++)
-            {
-                if(Matrix.vecDist(positions.gridPos,this.connections[i][1]) < 0.1)
-                {
-                    return i;
-                }
-            }
-        }
-        return undefined;
-    }
-    /**
-     * @param {MousePositions}positions
-     */
-    drag(positions,conn)
-    {
-        Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
-    }
-
-    /**
-     * @param {MousePositions}positions
-     */
-    getHovering(positions)
-    {
         if(Matrix.vecDist(positions.screenPos,positions.roundScreenPos)<12)
         {
             for(let i = 0; i < this.connections.length; i++)
@@ -143,7 +130,12 @@ class VoltageSource
      */
     drag(positions,conn)
     {
-        Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
+        if(Matrix.vecDist(positions.roundPos,this.connections[conn][1]) > 0.1)
+        {
+            Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
+            return true;
+        }
+        return false;
     }
 }
 
@@ -241,7 +233,12 @@ class Resistor
      */
     drag(positions,conn)
     {
-        Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
+        if(Matrix.vecDist(positions.roundPos,this.connections[conn][1]) > 0.1)
+        {
+            Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
+            return true;
+        }
+        return false;
     }
 }
 
@@ -287,7 +284,7 @@ class Wire
         
         ctx.lineWidth = 5;
 
-        ctx.strokeStyle=`rgb(100,100,100)`;
+        ctx.strokeStyle = getVoltageColor(this.connections[0][2]);
         ctx.beginPath();
         ctx.moveTo(a[0],a[1]);
         ctx.lineTo(b[0],b[1]);
@@ -326,7 +323,12 @@ class Wire
      */
     drag(positions,conn)
     {
-        Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
+        if(Matrix.vecDist(positions.roundPos,this.connections[conn][1]) > 0.1)
+        {
+            Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
+            return true;
+        }
+        return false;
     }
 }
 
@@ -389,6 +391,11 @@ class Ground
      */
     drag(positions,conn)
     {
-        Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
+        if(Matrix.vecDist(positions.roundPos,this.connections[conn][1]) > 0.1)
+        {
+            Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
+            return true;
+        }
+        return false;
     }
 }
