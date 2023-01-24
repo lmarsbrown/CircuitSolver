@@ -152,7 +152,8 @@ function mouseHover(event)
     for(let i = 0; i < comps.length; i++)
     {
         let c = comps[i];
-        let hover = c.getHovering(positions);
+        let hover = hoverNode(positions,c);
+
         if(hover != undefined)
         {
             currentHover = [i,hover];
@@ -228,6 +229,7 @@ function dragNode(event)
         let dragSuccess = comps[currentHover[0]].drag(positions,currentHover[1]);
         if(dragSuccess)
         {
+            console.log("success")
             parseCircuit();
             solveCircuit();
         }
@@ -251,20 +253,23 @@ var nVoltages = [];
     
 var comps = [
     new Resistor(1000,Matrix.vec(1,1),Matrix.vec(5,1)),
-    new Resistor(1000,Matrix.vec(1,2),Matrix.vec(5,2)),
-    new Resistor(1000,Matrix.vec(1,3),Matrix.vec(5,3)),
-    new Resistor(1000,Matrix.vec(1,4),Matrix.vec(5,4)),
-    new Resistor(1000,Matrix.vec(1,5),Matrix.vec(5,5)),
-    new Resistor(1000,Matrix.vec(1,6),Matrix.vec(5,6)),
-    new VoltageSource(10,Matrix.vec(6,7),Matrix.vec(8,7)),
-    new VoltageSource(10,Matrix.vec(6,8),Matrix.vec(8,8)),
-    new VoltageSource(5,Matrix.vec(6,9),Matrix.vec(8,9)),
+    // new Resistor(1000,Matrix.vec(1,2),Matrix.vec(5,2)),
+    // new Resistor(1000,Matrix.vec(1,3),Matrix.vec(5,3)),
+    // new Resistor(1000,Matrix.vec(1,4),Matrix.vec(5,4)),
+    // new Resistor(1000,Matrix.vec(1,5),Matrix.vec(5,5)),
+    // new Resistor(1000,Matrix.vec(1,6),Matrix.vec(5,6)),
+    // new VoltageSource(10,Matrix.vec(6,7),Matrix.vec(8,7)),
+    new CurrentSource(10,Matrix.vec(6,7),Matrix.vec(8,7)),
+    // new VoltageSource(10,Matrix.vec(6,8),Matrix.vec(8,8)),
+    // new VoltageSource(5,Matrix.vec(6,9),Matrix.vec(8,9)),
     new Ground(Matrix.vec(7,7)),
-    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
-    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
+    // new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
+    // new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
     new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
     new Wire(Matrix.vec(10,10),Matrix.vec(11,11))
 ];
+
+var dT = 10/1000;
 
 
 

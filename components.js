@@ -37,10 +37,51 @@ var loaded = 0;
 function loadImage()
 {
     loaded++;
-    if(loaded == 2)
+    if(loaded == 3)
     {
         main();
     }
+}
+
+/**
+ * 
+ * @typedef MousePositions
+ * @type {Object}
+ * @property {Float32Array} gridPos
+ * @property {Float32Array} roundPos
+ * @property {Float32Array} screenPos
+ * @property {Float32Array} roundScreenPos
+ */
+
+
+/**
+ * @param {MousePositions}positions
+ */
+function hoverNode(positions,comp)
+{
+    if(Matrix.vecDist(positions.screenPos,positions.roundScreenPos)<12)
+    {
+        for(let i = 0; i < comp.connections.length; i++)
+        {
+            if(Matrix.vecDist(positions.roundPos,comp.connections[i][1]) < 0.1)
+            {
+                return i;
+            }
+        }
+    }
+}
+
+function dragNodeDefault(comp,positions,conn)
+{
+    if(
+        Matrix.vecDist(positions.roundPos, comp.connections[conn][1]) > 0.1 &&
+        Matrix.vecDist(positions.roundPos, comp.connections[1-conn][1]) > 0.1
+        )
+    {
+        Matrix.copyMat(positions.roundPos,comp.connections[conn][1]);
+        return true;
+    }
+    return false;
 }
 
 
@@ -51,6 +92,11 @@ getSymbolImg("resistor.svg",(data,paths)=>{
 
 getSymbolImg("vsrc.svg",(data)=>{
     VoltageSource.symbol = [new Path2D(data[0]),new Path2D(data[1])];
+})
+
+getSymbolImg("isrc.svg",(data,paths)=>{
+    CurrentSource.symbol = new Path2D(data[0]);
+    CurrentSource.path = paths[0];
 })
 
 
@@ -130,44 +176,53 @@ class VoltageSource
         // ctx.stroke(compPath);
         ctx.resetTransform();
     }
-
-    /**
-     * @param {MousePositions}positions
-     */
-    getHovering(positions)
-    {
-        if(Matrix.vecDist(positions.screenPos,positions.roundScreenPos)<12)
-        {
-            for(let i = 0; i < this.connections.length; i++)
-            {
-                if(Matrix.vecDist(positions.roundPos,this.connections[i][1]) < 0.1)
-                {
-                    return i;
-                }
-            }
-        }
-        return undefined;
-    }
     /**
      * @param {MousePositions}positions
      */
     drag(positions,conn)
     {
-        if(Matrix.vecDist(positions.roundPos,this.connections[conn][1]) > 0.1)
-        {
-            Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
-            return true;
-        }
-        return false;
+        return dragNodeDefault(this,positions,conn);
     }
 }
+
+
+// class Capacitor  
+// {
+//     constructor(voltage,p1,p2)
+//     {
+        
+
+//         this.connections = [
+//             [0,p1,0],
+//             [0,p2,0]
+//         ];
+
+//         let ivMat = Matrix.mat(2);
+//         ivMat[0] = 0;
+//         ivMat[1] = -voltage;
+//         ivMat[2] = 1;
+//         ivMat[3] = 0;
+        
+//         this.v = 0;
+//         this.i = 0;
+        
+
+//         this.simple = {nodes:[0,0],ivMat:ivMat};
+//     }
+//     updateSimple() 
+//     {
+//         this.simple.nodes[0]= this.connections[0][0];
+//         this.simple.nodes[1]= this.connections[1][0];
+//     }
+// }
 
 class Resistor
 {
     static symbol;
     constructor(resistance,p1,p2)
     {
-        
+        this.type = Resistor;
+        this.defaultSize = 3;
 
         this.connections = [
             [0,p1,0],
@@ -197,8 +252,9 @@ class Resistor
      */
     draw(getScreenPos)
     {
+        let resistorSize = Math.min(Matrix.vecDist(this.connections[0][1],this.connections[1][1]),this.defaultSize)
         const lineWidth = 5;
-        const restLen = (getScreenPos(Matrix.vec(3,0))[0]-getScreenPos(Matrix.vec(0,0))[0]);
+        const restLen = (getScreenPos(Matrix.vec(resistorSize,0))[0]-getScreenPos(Matrix.vec(0,0))[0]);
         let p1 = this.connections[0][1];
         let p2 = this.connections[1][1];
         let a = getScreenPos(p1);
@@ -231,57 +287,48 @@ class Resistor
         let restPath = new Path2D();
         restPath.moveTo(-transWireLen,0);
         restPath.lineTo(-0,0);
-        restPath.addPath(Resistor.symbol);
+        restPath.addPath(this.type.symbol);
         restPath.lineTo(1000+transWireLen,0);
 
         ctx.stroke(restPath);
         ctx.resetTransform();
-    }
-
-    /**
-     * 
-     * @typedef MousePositions
-     * @type {Object}
-     * @property {Float32Array} gridPos
-     * @property {Float32Array} roundPos
-     * @property {Float32Array} screenPos
-     * @property {Float32Array} roundScreenPos
-     */
-
-    /**
-     * @param {MousePositions}positions
-     */
-    getHovering(positions)
-    {
-        if(Matrix.vecDist(positions.screenPos,positions.roundScreenPos)<12)
-        {
-            for(let i = 0; i < this.connections.length; i++)
-            {
-                if(Matrix.vecDist(positions.roundPos,this.connections[i][1]) < 0.1)
-                {
-                    return i;
-                }
-            }
-        }
-        return undefined;
     }
     /**
      * @param {MousePositions}positions
      */
     drag(positions,conn)
     {
-        if(
-            Matrix.vecDist(positions.roundPos,this.connections[conn][1]) > 0.1&&
-            Matrix.vecDist(positions.roundPos,this.connections[1-conn][1]) > 2.9
-        )
-        {
-            Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
-            return true;
-        }
-        return false;
+        return dragNodeDefault(this,positions,conn);
     }
 }
 
+class CurrentSource extends Resistor
+{
+    constructor(current,p1,p2)
+    {
+        super();
+        this.type = CurrentSource;
+        this.defaultSize = 2;
+
+        this.connections = [
+            [0,p1,0],
+            [0,p2,0]
+        ];
+
+        let ivMat = Matrix.mat(2);
+        ivMat[0] = 1;
+        ivMat[1] = 0;
+        ivMat[2] = 0;
+        ivMat[3] = current;
+        
+        this.v = 0;
+        this.i = 0;
+        
+
+        this.simple = {nodes:[0,0],ivMat:ivMat};
+        this.t = 0;
+    }
+}
 
 class Wire
 {
@@ -330,45 +377,12 @@ class Wire
         ctx.lineTo(b[0],b[1]);
         ctx.stroke();
     }
-
-    /**
-     * 
-     * @typedef MousePositions
-     * @type {Object}
-     * @property {Float32Array} gridPos
-     * @property {Float32Array} roundPos
-     * @property {Float32Array} screenPos
-     * @property {Float32Array} roundScreenPos
-     */
-
-    /**
-     * @param {MousePositions}positions
-     */
-    getHovering(positions)
-    {
-        if(Matrix.vecDist(positions.screenPos,positions.roundScreenPos)<12)
-        {
-            for(let i = 0; i < this.connections.length; i++)
-            {
-                if(Matrix.vecDist(positions.roundPos,this.connections[i][1]) < 0.1)
-                {
-                    return i;
-                }
-            }
-        }
-        return undefined;
-    }
     /**
      * @param {MousePositions}positions
      */
     drag(positions,conn)
     {
-        if(Matrix.vecDist(positions.roundPos,this.connections[conn][1]) > 0.1)
-        {
-            Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
-            return true;
-        }
-        return false;
+        return dragNodeDefault(this,positions,conn);
     }
 }
 
@@ -408,30 +422,14 @@ class Ground
         ctx.fillRect(loc[0]-10,loc[1]-10,20,20);
     }
 
-
-    /**
-     * @param {MousePositions}positions
-     */
-    getHovering(positions)
-    {
-        if(Matrix.vecDist(positions.screenPos,positions.roundScreenPos)<12)
-        {
-            for(let i = 0; i < this.connections.length; i++)
-            {
-                if(Matrix.vecDist(positions.roundPos,this.connections[i][1]) < 0.1)
-                {
-                    return i;
-                }
-            }
-        }
-        return undefined;
-    }
     /**
      * @param {MousePositions}positions
      */
     drag(positions,conn)
     {
-        if(Matrix.vecDist(positions.roundPos,this.connections[conn][1]) > 0.1)
+        if(
+            Matrix.vecDist(positions.roundPos, this.connections[conn][1]) > 0.1
+            )
         {
             Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
             return true;
