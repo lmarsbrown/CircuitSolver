@@ -14,7 +14,7 @@ function getSymbolImg(name,callback)
         {
             pathsData.push(paths[i].getAttribute("d"));
         }
-        callback(pathsData);
+        callback(pathsData,paths);
         loadImage();
     };
     xhr.send()
@@ -44,8 +44,9 @@ function loadImage()
 }
 
 
-getSymbolImg("resistor.svg",(data)=>{
+getSymbolImg("resistor.svg",(data,paths)=>{
     Resistor.symbol = new Path2D(data[0]);
+    Resistor.path = paths[0];
 })
 
 getSymbolImg("vsrc.svg",(data)=>{
@@ -162,6 +163,7 @@ class Resistor
         
 
         this.simple = {nodes:[0,0],ivMat:ivMat};
+        this.t = 0;
     }
     updateSimple() 
     {
@@ -173,30 +175,89 @@ class Resistor
      */
     draw(getScreenPos)
     {
+        const lineWidth = 5;
+        const restLen = (getScreenPos(Matrix.vec(3,0))[0]-getScreenPos(Matrix.vec(0,0))[0]);
         let p1 = this.connections[0][1];
         let p2 = this.connections[1][1];
         let a = getScreenPos(p1);
         let b = getScreenPos(p2);
+
         let line = Matrix.subVecs(b,a);
 
-        let dist = Matrix.vecLength(line);
-        let scale = (dist/1000);
-        
-        
-        ctx.lineWidth = 5/scale;
 
-        ctx.translate(a[0],a[1]);
+        let dist = Matrix.vecLength(line);
+        let wireLen = (dist-restLen)/2;
+        let transWireLen = 1000*wireLen/restLen;
+        let scale = restLen/1000;
+
+        let restStart = Matrix.addVecs(a,Matrix.scaleVec(line,wireLen/dist));
+        ctx.lineCap = "round";
+        
+
+        ctx.translate(restStart[0],restStart[1]);
         ctx.scale(scale,scale);
         ctx.rotate(Math.atan2(line[1],line[0]));
+        ctx.lineWidth = lineWidth/scale;
 
         var grd = ctx.createLinearGradient(0,0,1000,0);
 
         grd.addColorStop(0, getVoltageColor(this.connections[0][2]));
         grd.addColorStop(1, getVoltageColor(this.connections[1][2]));
 
-        ctx.strokeStyle=grd;
+        ctx.strokeStyle = grd;
+
+        let restPath = new Path2D();
+        restPath.moveTo(-transWireLen,0);
+        restPath.lineTo(-0,0);
+        restPath.addPath(Resistor.symbol);
+        restPath.lineTo(1000+transWireLen,0);
+
+        ctx.stroke(restPath);
+        ctx.resetTransform();
+
+        
+
+        
+
+        // this.drawComponent(r1,r2)
+    }
+
+    drawComponent(a,b)
+    {
+        let line = Matrix.subVecs(b,a);
+
+        let dist = Matrix.vecLength(line);
+        let scale = (dist/1000);
+        
+        let width = 5/scale; 
+        ctx.lineWidth = width;
+
+        ctx.translate(a[0],a[1]);
+        ctx.scale(scale,scale);
+        ctx.rotate(Math.atan2(line[1],line[0]));
+
+        // var grd = ctx.createLinearGradient(0,0,1000,0);
+
+        // grd.addColorStop(0, getVoltageColor(this.connections[0][2]));
+        // grd.addColorStop(1, getVoltageColor(this.connections[1][2]));
+
+        // ctx.strokeStyle = grd;
         
         ctx.stroke(Resistor.symbol);
+
+        // const spacing = 10/scale;
+        // let pLen = Resistor.path.getTotalLength();
+        // const speed = 0.005/(scale*scale);
+        // const count = Math.floor(pLen/spacing);
+
+        // for(let i = 0; i < count; i++)
+        // {
+        //     let p = Resistor.path.getPointAtLength((this.t+i*spacing)%pLen);
+
+        //     ctx.fillStyle = `rgb(255,255,0)`;
+        //     ctx.fillRect(p.x-width/2,p.y-width/2,width,width);
+        //     this.t+=speed;
+        // }
 
         ctx.resetTransform();
     }
@@ -233,7 +294,10 @@ class Resistor
      */
     drag(positions,conn)
     {
-        if(Matrix.vecDist(positions.roundPos,this.connections[conn][1]) > 0.1)
+        if(
+            Matrix.vecDist(positions.roundPos,this.connections[conn][1]) > 0.1&&
+            Matrix.vecDist(positions.roundPos,this.connections[1-conn][1]) > 2.9
+        )
         {
             Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
             return true;

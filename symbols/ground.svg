@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="Layer_1"
+   data-name="Layer 1"
+   viewBox="0 0 1000 1041.4571"
+   version="1.1"
+   sodipodi:docname="ground.svg"
+   width="1000"
+   height="1041.457"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs9" />
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="0.2159207"
+     inkscape:cx="405.24137"
+     inkscape:cy="1620.9655"
+     inkscape:window-width="1465"
+     inkscape:window-height="1030"
+     inkscape:window-x="371"
+     inkscape:window-y="337"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="Layer_1" />
+  <title
+     id="title2">grounding</title>
+  <path
+     d="m 53.690708,53.69095 a 53.69071,53.69071 0 0 1 0,-107.38142 H 455.9881 v -415.40097 a 53.775792,53.775792 0 0 1 107.46649,0 v 938.18336 a 53.775792,53.775792 0 0 1 -107.46649,0 V 53.69095 Z M 892.49097,-199.87212 a 53.775792,53.775792 0 1 1 107.46644,0 v 399.31928 a 53.775792,53.775792 0 1 1 -107.46644,0 z M 674.23953,-340.69323 a 53.775792,53.775792 0 0 1 107.4665,0 V 340.6937 a 53.775792,53.775792 0 0 1 -107.4665,0 z"
+     id="path4"
+     style="stroke-width:8.50882" />
+  <metadata
+     id="metadata826">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>grounding</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>
