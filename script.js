@@ -104,6 +104,8 @@ function parseCircuit()
         comps[i].updateSimple();
         simples.push(comps[i].simple);
     }
+
+    solveCircuit();
 }
 
 function solveCircuit()
@@ -129,6 +131,11 @@ function solveCircuit()
             }
         }
     }
+    nVoltages = [];
+    for(let i = 0; i < currentNode-2; i++)
+    {
+        nVoltages[i] = solu[comps.length+i];
+    }
     draw();
 }
 
@@ -153,10 +160,12 @@ function mouseHover(event)
         }
     }
     let localNode = getGridNode(roundPos[0],roundPos[1])
+    
     // console.log(currentHover);
     draw();
     if(localNode != 0)
     {
+        document.getElementById("DataPanel").innerText = "Node Voltage: "+ nVoltages[localNode-2];
         if(localNode>1)
         {
             ctx.fillStyle = `rgb(0,0,255)`;
@@ -167,6 +176,10 @@ function mouseHover(event)
             ctx.fillStyle = `rgb(100,100,100)`;
             drawGridNode(roundPos[0],roundPos[1],8);
         }
+    }
+    else
+    {
+        document.getElementById("DataPanel").innerText = "";
     }
 
     // draw();
@@ -234,13 +247,23 @@ const gridW = 20;
 const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
 var currentNode = 2;
+var nVoltages = [];
     
 var comps = [
-    new Resistor(100,Matrix.vec(2,2),Matrix.vec(4,4)),
-    new Resistor(200,Matrix.vec(4,4),Matrix.vec(4,6)),
-    new VoltageSource(5,Matrix.vec(4,6),Matrix.vec(4,8)),
+    new Resistor(1000,Matrix.vec(1,1),Matrix.vec(5,1)),
+    new Resistor(1000,Matrix.vec(1,2),Matrix.vec(5,2)),
+    new Resistor(1000,Matrix.vec(1,3),Matrix.vec(5,3)),
+    new Resistor(1000,Matrix.vec(1,4),Matrix.vec(5,4)),
+    new Resistor(1000,Matrix.vec(1,5),Matrix.vec(5,5)),
+    new Resistor(1000,Matrix.vec(1,6),Matrix.vec(5,6)),
+    new VoltageSource(10,Matrix.vec(6,7),Matrix.vec(8,7)),
+    new VoltageSource(10,Matrix.vec(6,8),Matrix.vec(8,8)),
+    new VoltageSource(5,Matrix.vec(6,9),Matrix.vec(8,9)),
     new Ground(Matrix.vec(7,7)),
-    new Wire(Matrix.vec(7,7),Matrix.vec(8,8))
+    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
+    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
+    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
+    new Wire(Matrix.vec(10,10),Matrix.vec(11,11))
 ];
 
 

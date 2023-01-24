@@ -5,18 +5,24 @@
    version="1.1"
    x="0px"
    y="0px"
-   viewBox="0 0 1000 480.40799"
+   viewBox="0 0 1000 3912.738"
    enable-background="new 0 0 1000 1000"
    xml:space="preserve"
    id="svg14"
    sodipodi:docname="vsrc.svg"
    width="1000"
-   height="480.40799"
+   height="3912.738"
    inkscape:version="1.1 (c68e22c387, 2021-05-23)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   xmlns:svg="http://www.w3.org/2000/svg"><path
+   style="fill:none;stroke:#000000;stroke-width:8.14462px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+   d="M 4.0722569,-1105.7536 V 1105.7638"
+   id="path913" /><path
+   style="fill:none;stroke:#000000;stroke-width:8.14462px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+   d="M 1004.0723,1956.369 V -1956.369"
+   id="path915" /><defs
    id="defs18" /><sodipodi:namedview
    id="namedview16"
    pagecolor="#ffffff"
@@ -26,9 +32,9 @@
    inkscape:pageopacity="0.0"
    inkscape:pagecheckerboard="0"
    showgrid="false"
-   inkscape:zoom="0.812"
-   inkscape:cx="354.6798"
-   inkscape:cy="75.738916"
+   inkscape:zoom="0.1015"
+   inkscape:cx="-2157.6355"
+   inkscape:cy="1157.6355"
    inkscape:window-width="1920"
    inkscape:window-height="1001"
    inkscape:window-x="-9"
@@ -39,10 +45,4 @@
 <metadata
    id="metadata2"> Svg Vector Icons : http://www.onlinewebfonts.com/icon </metadata>
 
-<path
-   id="path2845"
-   style="fill:none;stroke:#000000;stroke-width:41.776;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-   d="M 427.58548,-135.765 V 135.76625 Z M 0,6.3e-4 h 427.0403 z" /><path
-   id="path997-4"
-   style="fill:none;stroke:#000000;stroke-width:41.776;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-   d="M 549.36599,-240.204 V 240.204 Z M 999.99999,1e-5 H 549.94054 Z" /></svg>
+</svg>
