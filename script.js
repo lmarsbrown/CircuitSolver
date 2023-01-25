@@ -243,7 +243,7 @@ const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
 var currentNode = 2;
 var nVoltages = [];
-var dT =   10/1000;
+var dT =   1/(1000*10);
 var t = 0;
 
 let pV = 0;
@@ -294,7 +294,7 @@ function draw()
     if(Math.sign(dV)!=Math.sign(pD))
     {
         max = v;
-        console.log(t);
+        console.log(t)
     }
     pV = v;
     pD = dV;
