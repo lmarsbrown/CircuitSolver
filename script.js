@@ -243,7 +243,12 @@ const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
 var currentNode = 2;
 var nVoltages = [];
-var dT =   1/1000;
+var dT =   10/1000;
+var t = 0;
+
+let pV = 0;
+let pD = 0;
+let max = 0;
     
 var mouse = {pos:Matrix.vec(2),down:false};
 
@@ -257,17 +262,18 @@ var comps = [
     // new Resistor(1000,Matrix.vec(1,6),Matrix.vec(5,6)),
     // new VoltageSource(10,Matrix.vec(6,7),Matrix.vec(8,7)),
     // new CurrentSource(10,Matrix.vec(6,7),Matrix.vec(8,7)),
-    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
-    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
-    new VoltageSource(10,Matrix.vec(6,8),Matrix.vec(8,8)),
-    new Inductor(0,1,Matrix.vec(6,9),Matrix.vec(8,9)),
-    new Inductor(0,2,Matrix.vec(6,10),Matrix.vec(8,10)),
-    new Capacitor(0,0.1,Matrix.vec(6,9),Matrix.vec(8,9)),
-    new Ground(Matrix.vec(7,7)),
+    new Wire(Matrix.vec(8,4),Matrix.vec(8,8)),
+    // new Wire(Matrix.vec(8,8),Matrix.vec(8,12)),
+    new Wire(Matrix.vec(14,4),Matrix.vec(14,8)),
+    // new Wire(Matrix.vec(14,8),Matrix.vec(14,12)),
+    // new VoltageSource(10,Matrix.vec(6,8),Matrix.vec(8,8)),
+    // new Inductor(0,1,Matrix.vec(6,9),Matrix.vec(8,9)),
+    new Inductor(0,1,Matrix.vec(8,4),Matrix.vec(14,4)),
+    new Capacitor(50,0.1,Matrix.vec(8,8),Matrix.vec(14,8)),
+    new Ground(Matrix.vec(8,8)),
     // new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
     // new Wire(Matrix.vec(10,10),Matrix.vec(11,11))
 ];
-
 
 
 function draw()
@@ -280,6 +286,21 @@ function draw()
     if(!mouse.down)
     {
         mouseHover();
+    }
+    
+    let v = comps[2].v;
+    let dV = v-pV;
+
+    if(Math.sign(dV)!=Math.sign(pD))
+    {
+        max = v;
+    }
+    pV = v;
+    pD = dV;
+    t+=dT;
+    if(Math.abs(v)<1)
+    {
+        console.log(t);
     }
     requestAnimationFrame(draw);
 }
@@ -307,6 +328,8 @@ function main()
     can.addEventListener("mouseup",()=>{
         mouse.down = false;
     });
+    parseCircuit()
     draw();
+
 }
 

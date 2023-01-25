@@ -324,7 +324,7 @@ class Capacitor extends VoltageSource
         ];
 
         let ivMat = Matrix.mat(2);
-        ivMat[0] = dT/capacitance;
+        ivMat[0] = dT*capacitance;
         ivMat[1] = -voltage;
         ivMat[2] = 1;
         ivMat[3] = 0;
@@ -339,7 +339,7 @@ class Capacitor extends VoltageSource
     {
         this.simple.nodes[0]= this.connections[0][0];
         this.simple.nodes[1]= this.connections[1][0];
-        this.simple.ivMat[1] = this.v;
+        this.simple.ivMat[1] = 2*this.v-this.simple.ivMat[1];
     }
 }
 
@@ -373,7 +373,7 @@ class Inductor extends CurrentSource
     {
         this.simple.nodes[0]= this.connections[0][0];
         this.simple.nodes[1]= this.connections[1][0];
-        this.simple.ivMat[3] = this.i;
+        this.simple.ivMat[3] = 2*this.i-this.simple.ivMat[3];
     }
 }
 
