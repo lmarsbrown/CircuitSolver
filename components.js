@@ -98,13 +98,17 @@ getSymbolImg("isrc.svg",(data,paths)=>{
     CurrentSource.symbol = new Path2D(data[0]);
     CurrentSource.path = paths[0];
 })
+getSymbolImg("capacitor.svg",(data)=>{
+    Capacitor.symbol = [new Path2D(data[0]),new Path2D(data[1])];
+})
+
 
 
 class VoltageSource
 {
     constructor(voltage,p1,p2)
     {
-        
+        this.type = VoltageSource;
 
         this.connections = [
             [0,p1,0],
@@ -163,10 +167,10 @@ class VoltageSource
         ctx.moveTo(-transWireLen,0);
         ctx.lineTo(0,0);
         ctx.stroke();
-        ctx.stroke(VoltageSource.symbol[0]);
+        ctx.stroke(this.type.symbol[0]);
         ctx.strokeStyle = col1;
 
-        ctx.stroke(VoltageSource.symbol[1]);
+        ctx.stroke(this.type.symbol[1]);
         ctx.beginPath()
         ctx.moveTo(1000,0);
         ctx.lineTo(transWireLen+1000,0);
@@ -184,37 +188,6 @@ class VoltageSource
         return dragNodeDefault(this,positions,conn);
     }
 }
-
-
-// class Capacitor  
-// {
-//     constructor(voltage,p1,p2)
-//     {
-        
-
-//         this.connections = [
-//             [0,p1,0],
-//             [0,p2,0]
-//         ];
-
-//         let ivMat = Matrix.mat(2);
-//         ivMat[0] = 0;
-//         ivMat[1] = -voltage;
-//         ivMat[2] = 1;
-//         ivMat[3] = 0;
-        
-//         this.v = 0;
-//         this.i = 0;
-        
-
-//         this.simple = {nodes:[0,0],ivMat:ivMat};
-//     }
-//     updateSimple() 
-//     {
-//         this.simple.nodes[0]= this.connections[0][0];
-//         this.simple.nodes[1]= this.connections[1][0];
-//     }
-// }
 
 class Resistor
 {
@@ -327,6 +300,76 @@ class CurrentSource extends Resistor
 
         this.simple = {nodes:[0,0],ivMat:ivMat};
         this.t = 0;
+    }
+}
+
+
+
+
+
+class Capacitor extends VoltageSource
+{
+    constructor(voltage,capacitance,p1,p2)
+    {
+        super(voltage,p1,p2);
+        this.type = Capacitor;
+
+        this.connections = [
+            [0,p1,0],
+            [0,p2,0]
+        ];
+
+        let ivMat = Matrix.mat(2);
+        ivMat[0] = dT/capacitance;
+        ivMat[1] = -voltage;
+        ivMat[2] = 1;
+        ivMat[3] = 0;
+        
+        this.v = -voltage;
+        this.i = 0;
+        
+
+        this.simple = {nodes:[0,0],ivMat:ivMat};
+    }
+    updateSimple() 
+    {
+        this.simple.nodes[0]= this.connections[0][0];
+        this.simple.nodes[1]= this.connections[1][0];
+        this.simple.ivMat[1] = this.v;
+    }
+}
+
+class Inductor extends CurrentSource
+{
+    constructor(current,inductance,p1,p2)
+    {
+        super(current,p1,p2);
+        this.type = CurrentSource;
+        this.defaultSize = 2;
+
+        this.connections = [
+            [0,p1,0],
+            [0,p2,0]
+        ];
+
+        let ivMat = Matrix.mat(2);
+        ivMat[0] = 1;
+        ivMat[1] = 0;
+        ivMat[2] = dT/inductance;
+        ivMat[3] = current;
+        
+        this.v = 0;
+        this.i = current;
+        
+
+        this.simple = {nodes:[0,0],ivMat:ivMat};
+        this.t = 0;
+    }
+    updateSimple() 
+    {
+        this.simple.nodes[0]= this.connections[0][0];
+        this.simple.nodes[1]= this.connections[1][0];
+        this.simple.ivMat[3] = this.i;
     }
 }
 

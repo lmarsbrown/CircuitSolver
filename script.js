@@ -47,15 +47,6 @@ function getGridPos(pos)
 {
     return [pos[0]*(gridW+1)/(canW)-1,pos[1]*(gridH+1)/(canH)-1];
 }
-
-function draw()
-{
-    clear();
-    populateNodes();
-    drawComponents();
-    // drawGrid();
-}
-
 function populateNodes()
 {
     currentNode = 2;
@@ -110,6 +101,11 @@ function parseCircuit()
 
 function solveCircuit()
 {
+    for(let i = 0; i < comps.length; i++)
+    {
+        comps[i].updateSimple();
+    }
+
     let solu = Solver.solve(simples,currentNode-1);
     if(!solu)
     {
@@ -136,17 +132,16 @@ function solveCircuit()
     {
         nVoltages[i] = solu[comps.length+i];
     }
-    draw();
 }
 
-function mouseHover(event)
+function mouseHover()
 {
-    let screenPos = Matrix.vec(event.offsetX,event.offsetY);
-    let gridPos = getGridPos(screenPos);
+    
+    let gridPos = getGridPos(mouse.pos);
     let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
     let roundScreenPos = getScreenPos(Matrix.vec(roundPos[0],roundPos[1]));
 
-    let positions = {screenPos:screenPos,gridPos:gridPos,roundPos:roundPos,roundScreenPos:roundScreenPos};
+    let positions = {screenPos:mouse.pos,gridPos:gridPos,roundPos:roundPos,roundScreenPos:roundScreenPos};
 
     currentHover = undefined;
     for(let i = 0; i < comps.length; i++)
@@ -163,7 +158,6 @@ function mouseHover(event)
     let localNode = getGridNode(roundPos[0],roundPos[1])
     
     // console.log(currentHover);
-    draw();
     if(localNode != 0)
     {
         document.getElementById("DataPanel").innerText = "Node Voltage: "+ nVoltages[localNode-2];
@@ -234,7 +228,6 @@ function dragNode(event)
             solveCircuit();
         }
         
-        draw();
     }
 }
 let can = document.createElement("canvas");
@@ -250,27 +243,45 @@ const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
 var currentNode = 2;
 var nVoltages = [];
+var dT =   1/1000;
+    
+var mouse = {pos:Matrix.vec(2),down:false};
+
     
 var comps = [
-    new Resistor(1000,Matrix.vec(1,1),Matrix.vec(5,1)),
+    new Resistor(1,Matrix.vec(1,1),Matrix.vec(5,1)),
     // new Resistor(1000,Matrix.vec(1,2),Matrix.vec(5,2)),
     // new Resistor(1000,Matrix.vec(1,3),Matrix.vec(5,3)),
     // new Resistor(1000,Matrix.vec(1,4),Matrix.vec(5,4)),
     // new Resistor(1000,Matrix.vec(1,5),Matrix.vec(5,5)),
     // new Resistor(1000,Matrix.vec(1,6),Matrix.vec(5,6)),
     // new VoltageSource(10,Matrix.vec(6,7),Matrix.vec(8,7)),
-    new CurrentSource(10,Matrix.vec(6,7),Matrix.vec(8,7)),
+    // new CurrentSource(10,Matrix.vec(6,7),Matrix.vec(8,7)),
     // new VoltageSource(10,Matrix.vec(6,8),Matrix.vec(8,8)),
-    // new VoltageSource(5,Matrix.vec(6,9),Matrix.vec(8,9)),
+    new Inductor(0,0.1,Matrix.vec(6,9),Matrix.vec(8,9)),
+    new Capacitor(5,0.1,Matrix.vec(6,9),Matrix.vec(8,9)),
     new Ground(Matrix.vec(7,7)),
-    // new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
-    // new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
     new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
-    new Wire(Matrix.vec(10,10),Matrix.vec(11,11))
+    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
+    // new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
+    // new Wire(Matrix.vec(10,10),Matrix.vec(11,11))
 ];
 
-var dT = 10/1000;
 
+
+function draw()
+{
+    solveCircuit();
+    clear();
+    populateNodes();
+    drawComponents();
+    drawGrid();
+    if(!mouse.down)
+    {
+        mouseHover();
+    }
+    requestAnimationFrame(draw);
+}
 
 
 function main()
@@ -278,6 +289,8 @@ function main()
 
 
     can.addEventListener("mousemove",(event)=>{
+        mouse.pos[0] = event.offsetX;
+        mouse.pos[1] = event.offsetY;
         if(!mouse.down)
         {
             mouseHover(event);
@@ -293,8 +306,6 @@ function main()
     can.addEventListener("mouseup",()=>{
         mouse.down = false;
     });
-    
-    let mouse = {x:0,y:0,down:false};
     draw();
 }
 
