@@ -85,6 +85,44 @@ function dragNodeDefault(comp,positions,conn)
 }
 
 
+/**
+ * Draws Current
+ * @param {*} p1 
+ * @param {*} p2 
+ * @param {*} t 
+ */
+
+
+//NOTE make current not adjust position
+function drawCurrentOverlay(p1,p2,i,t)
+{
+    let dist = Matrix.vecDist(p1,p2);
+    let line = Matrix.subVecs(p2,p1);
+    Matrix.normalize(line);
+    const spacing = 20;
+    const speed = 1;
+    const count = Math.floor(dist/spacing);
+    const width = 5;
+    const currentSpeed = 1/5;
+    line[0] *= spacing;
+    line[1] *= spacing;
+
+    for(let j = 0; j < count; j++)
+    {
+        let scalar = j+((t)*i*currentSpeed)%1;
+        if(i<0)
+        {
+            scalar++;
+        }
+        // console.log(scalar-j)
+        let p = Matrix.addVecs(p1,Matrix.scaleVec(line,scalar));
+
+        ctx.fillStyle = `rgb(255,255,0)`;
+        ctx.fillRect(p[0]-width/2,p[1]-width/2,width,width);
+    }
+}
+
+
 getSymbolImg("resistor.svg",(data,paths)=>{
     Resistor.symbol = new Path2D(data[0]);
     Resistor.path = paths[0];
@@ -269,6 +307,9 @@ class Resistor
 
         ctx.stroke(restPath);
         ctx.resetTransform();
+
+        drawCurrentOverlay(a,b,this.i,this.t);
+        this.t+= 0.01;
     }
     /**
      * @param {MousePositions}positions

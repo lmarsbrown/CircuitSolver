@@ -38,6 +38,10 @@ function drawComponents()
     {
         comps[i].draw(getScreenPos);
     }
+    // for(let i = 0; i < comps.length; i++)
+    // {
+    //     comps[i].drawOverlay(getScreenPos);
+    // }
 }
 function getScreenPos(pos)
 {
@@ -60,7 +64,6 @@ function populateNodes()
         for(let j = 0; j < c.connections.length; j++)
         {
             let conn = c.connections[j];
-            // console.log(conn);
             let x = conn[1][0];
             let y = conn[1][1];
             let node = getGridNode(x,y);
@@ -157,7 +160,6 @@ function mouseHover()
     }
     let localNode = getGridNode(roundPos[0],roundPos[1])
     
-    // console.log(currentHover);
     if(localNode != 0)
     {
         document.getElementById("DataPanel").innerText = "Node Voltage: "+ nVoltages[localNode-2];
@@ -176,38 +178,6 @@ function mouseHover()
     {
         document.getElementById("DataPanel").innerText = "";
     }
-
-    // draw();
-    // // console.log(Math.abs(roundScreenPos[0]-event.offsetX))
-    // // console.log(roundPos)
-    // if(Math.abs(roundScreenPos[0]-event.offsetX)<5&&Math.abs(roundScreenPos[1]-event.offsetY)<5)
-    // {
-    //     //Is on a node
-    //     let localNode = getGridNode(roundPos[0],roundPos[1])
-    //     // console.log(currentHover);
-    //     if(localNode != 0)
-    //     {
-    //         if(localNode>1)
-    //         {
-    //             ctx.fillStyle = `rgb(0,0,255)`;
-    //             drawGridNode(roundPos[0],roundPos[1],8);
-    //         }
-    //         if(localNode==1)
-    //         {
-    //             ctx.fillStyle = `rgb(100,100,100)`;
-    //             drawGridNode(roundPos[0],roundPos[1],8);
-    //         }
-    //         currentHover = getComponentEnd(gridPos);
-    //     }
-    //     else
-    //     {
-    //         currentHover = undefined;
-    //     }
-    // }
-    // else
-    // {
-    //     currentHover = undefined;
-    // }
 }
 
 function dragNode(event)
@@ -243,7 +213,7 @@ const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
 var currentNode = 2;
 var nVoltages = [];
-var dT =   10/(1000);
+var dT =   100/(1000*1000);
 var t = 0;
 
 let pV = 0;
@@ -269,7 +239,8 @@ var comps = [
     // new VoltageSource(10,Matrix.vec(6,8),Matrix.vec(8,8)),
     // new Inductor(0,1,Matrix.vec(6,9),Matrix.vec(8,9)),
     new Inductor(0,1,Matrix.vec(8,4),Matrix.vec(14,4)),
-    new Capacitor(5,1,Matrix.vec(8,8),Matrix.vec(14,8)),
+    // new Resistor(1,Matrix.vec(8,4),Matrix.vec(14,4)),
+    new Capacitor(1,5,Matrix.vec(8,8),Matrix.vec(14,8)),
     new Ground(Matrix.vec(8,8)),
     // new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
     // new Wire(Matrix.vec(10,10),Matrix.vec(11,11))
@@ -278,7 +249,22 @@ var comps = [
 
 function draw()
 {
-    solveCircuit();
+    for(let i = 0; i < 1000; i++)
+    {
+        solveCircuit();
+    
+        let v = comps[2].v;
+        let dV = v-pV;
+
+        if(Math.sign(dV)!=Math.sign(pD))
+        {
+            max = v;
+            // console.log(t)
+        }
+        pV = v;
+        pD = dV;
+        t+=dT;
+    }
     clear();
     populateNodes();
     drawComponents();
@@ -286,21 +272,6 @@ function draw()
     if(!mouse.down)
     {
         mouseHover();
-    }
-    
-    let v = comps[2].v;
-    let dV = v-pV;
-
-    if(Math.sign(dV)!=Math.sign(pD))
-    {
-        max = v;
-        console.log(t)
-    }
-    pV = v;
-    pD = dV;
-    t+=dT;
-    if(Math.abs(v)<1)
-    {
     }
     requestAnimationFrame(draw);
 }
