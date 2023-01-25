@@ -249,7 +249,7 @@ var mouse = {pos:Matrix.vec(2),down:false};
 
     
 var comps = [
-    new Resistor(1,Matrix.vec(1,1),Matrix.vec(5,1)),
+    // new Resistor(1,Matrix.vec(1,1),Matrix.vec(5,1)),
     // new Resistor(1000,Matrix.vec(1,2),Matrix.vec(5,2)),
     // new Resistor(1000,Matrix.vec(1,3),Matrix.vec(5,3)),
     // new Resistor(1000,Matrix.vec(1,4),Matrix.vec(5,4)),
@@ -257,12 +257,13 @@ var comps = [
     // new Resistor(1000,Matrix.vec(1,6),Matrix.vec(5,6)),
     // new VoltageSource(10,Matrix.vec(6,7),Matrix.vec(8,7)),
     // new CurrentSource(10,Matrix.vec(6,7),Matrix.vec(8,7)),
-    // new VoltageSource(10,Matrix.vec(6,8),Matrix.vec(8,8)),
-    new Inductor(0,0.1,Matrix.vec(6,9),Matrix.vec(8,9)),
-    new Capacitor(5,0.1,Matrix.vec(6,9),Matrix.vec(8,9)),
+    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
+    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
+    new VoltageSource(10,Matrix.vec(6,8),Matrix.vec(8,8)),
+    new Inductor(0,1,Matrix.vec(6,9),Matrix.vec(8,9)),
+    new Inductor(0,2,Matrix.vec(6,10),Matrix.vec(8,10)),
+    new Capacitor(0,0.1,Matrix.vec(6,9),Matrix.vec(8,9)),
     new Ground(Matrix.vec(7,7)),
-    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
-    new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
     // new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
     // new Wire(Matrix.vec(10,10),Matrix.vec(11,11))
 ];

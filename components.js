@@ -37,7 +37,7 @@ var loaded = 0;
 function loadImage()
 {
     loaded++;
-    if(loaded == 3)
+    if(loaded == 4)
     {
         main();
     }
@@ -89,19 +89,23 @@ getSymbolImg("resistor.svg",(data,paths)=>{
     Resistor.symbol = new Path2D(data[0]);
     Resistor.path = paths[0];
 })
+getSymbolImg("isrc.svg",(data,paths)=>{
+    CurrentSource.symbol = new Path2D(data[0]);
+    CurrentSource.path = paths[0];
+})
+getSymbolImg("inductor.svg",(data,paths)=>{
+    Inductor.symbol = new Path2D(data[0]);
+    Inductor.path = paths[0];
+})
 
 getSymbolImg("vsrc.svg",(data)=>{
     VoltageSource.symbol = [new Path2D(data[0]),new Path2D(data[1])];
 })
 
-getSymbolImg("isrc.svg",(data,paths)=>{
-    CurrentSource.symbol = new Path2D(data[0]);
-    CurrentSource.path = paths[0];
-})
+
 getSymbolImg("capacitor.svg",(data)=>{
     Capacitor.symbol = [new Path2D(data[0]),new Path2D(data[1])];
-})
-
+});
 
 
 class VoltageSource
@@ -344,8 +348,8 @@ class Inductor extends CurrentSource
     constructor(current,inductance,p1,p2)
     {
         super(current,p1,p2);
-        this.type = CurrentSource;
-        this.defaultSize = 2;
+        this.type = Inductor;
+        this.defaultSize = 2.5;
 
         this.connections = [
             [0,p1,0],
