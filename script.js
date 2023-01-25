@@ -269,7 +269,7 @@ var comps = [
     // new VoltageSource(10,Matrix.vec(6,8),Matrix.vec(8,8)),
     // new Inductor(0,1,Matrix.vec(6,9),Matrix.vec(8,9)),
     new Inductor(0,1,Matrix.vec(8,4),Matrix.vec(14,4)),
-    new Capacitor(50,0.1,Matrix.vec(8,8),Matrix.vec(14,8)),
+    new Capacitor(50,1,Matrix.vec(8,8),Matrix.vec(14,8)),
     new Ground(Matrix.vec(8,8)),
     // new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
     // new Wire(Matrix.vec(10,10),Matrix.vec(11,11))
@@ -294,13 +294,13 @@ function draw()
     if(Math.sign(dV)!=Math.sign(pD))
     {
         max = v;
+        console.log(t);
     }
     pV = v;
     pD = dV;
     t+=dT;
     if(Math.abs(v)<1)
     {
-        console.log(t);
     }
     requestAnimationFrame(draw);
 }
