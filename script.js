@@ -243,7 +243,7 @@ const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
 var currentNode = 2;
 var nVoltages = [];
-var dT =   1/(1000*10);
+var dT =   10/(1000);
 var t = 0;
 
 let pV = 0;
@@ -269,7 +269,7 @@ var comps = [
     // new VoltageSource(10,Matrix.vec(6,8),Matrix.vec(8,8)),
     // new Inductor(0,1,Matrix.vec(6,9),Matrix.vec(8,9)),
     new Inductor(0,1,Matrix.vec(8,4),Matrix.vec(14,4)),
-    new Capacitor(50,1,Matrix.vec(8,8),Matrix.vec(14,8)),
+    new Capacitor(5,1,Matrix.vec(8,8),Matrix.vec(14,8)),
     new Ground(Matrix.vec(8,8)),
     // new Wire(Matrix.vec(10,10),Matrix.vec(11,11)),
     // new Wire(Matrix.vec(10,10),Matrix.vec(11,11))
