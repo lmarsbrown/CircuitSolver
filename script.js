@@ -216,7 +216,7 @@ const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
 var currentNode = 2;
 var nVoltages = [];
-var dT =   100/(1000*1000);
+var dT =   50/(1000);
 var t = 0;
 
 let pV = 0;
