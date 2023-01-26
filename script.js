@@ -38,10 +38,13 @@ function drawComponents()
     {
         comps[i].draw(getScreenPos);
     }
-    // for(let i = 0; i < comps.length; i++)
-    // {
-    //     comps[i].drawOverlay(getScreenPos);
-    // }
+}
+function drawOverlays()
+{
+    for(let i = 0; i < comps.length; i++)
+    {
+        comps[i].drawCurrentOverlay(getScreenPos);
+    }
 }
 function getScreenPos(pos)
 {
@@ -249,7 +252,7 @@ var comps = [
 
 function draw()
 {
-    for(let i = 0; i < 1000; i++)
+    for(let i = 0; i < 1; i++)
     {
         solveCircuit();
     
@@ -268,7 +271,8 @@ function draw()
     clear();
     populateNodes();
     drawComponents();
-    drawGrid();
+    drawOverlays();
+    // drawGrid();
     if(!mouse.down)
     {
         mouseHover();

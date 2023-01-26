@@ -2,6 +2,7 @@
 
 function getSymbolImg(name,callback)
 {
+    requested++;
     let xhr = new XMLHttpRequest();
     xhr.open("GET","symbols/"+name);
     xhr.onload = ()=>{
@@ -34,10 +35,11 @@ function getVoltageColor(v)
 }
 
 var loaded = 0;
+var requested = 0;
 function loadImage()
 {
     loaded++;
-    if(loaded == 4)
+    if(loaded == requested)
     {
         main();
     }
@@ -93,33 +95,44 @@ function dragNodeDefault(comp,positions,conn)
  */
 
 
+var currentSpeed = 5/100;
 //NOTE make current not adjust position
-function drawCurrentOverlay(p1,p2,i,t)
+function drawCurrentOverlay(p1,p2,t)
 {
     let dist = Matrix.vecDist(p1,p2);
     let line = Matrix.subVecs(p2,p1);
     Matrix.normalize(line);
-    const spacing = 20;
-    const speed = 1;
-    const count = Math.floor(dist/spacing);
+    const spacing = (getScreenPos(Matrix.vec(1,0))[0]-getScreenPos(Matrix.vec(0,0))[0])/2;
+    const count = Math.ceil(dist/spacing);
     const width = 5;
-    const currentSpeed = 1/5;
     line[0] *= spacing;
     line[1] *= spacing;
 
     for(let j = 0; j < count; j++)
     {
-        let scalar = j+((t)*i*currentSpeed)%1;
-        if(i<0)
+        let scalar = j+t%1;
+        if(t<0)
         {
             scalar++;
         }
-        // console.log(scalar-j)
-        let p = Matrix.addVecs(p1,Matrix.scaleVec(line,scalar));
-
-        ctx.fillStyle = `rgb(255,255,0)`;
-        ctx.fillRect(p[0]-width/2,p[1]-width/2,width,width);
+        if(scalar*spacing<dist)
+        {
+            let p = Matrix.addVecs(p1,Matrix.scaleVec(line,scalar));
+    
+            ctx.fillStyle = `rgb(255,255,0)`;
+            ctx.fillRect(p[0]-width/2,p[1]-width/2,width,width);
+        }
     }
+}
+function basicOverlay(comp,getScreenPos)
+{
+    let p1 = comp.connections[0][1];
+    let p2 = comp.connections[1][1];
+    let a = getScreenPos(p1);
+    let b = getScreenPos(p2);
+    drawCurrentOverlay(a,b,comp.oP);
+    comp.oP+= comp.i*currentSpeed;
+    comp.oP %= 1;
 }
 
 
@@ -168,6 +181,7 @@ class VoltageSource
         
 
         this.simple = {nodes:[0,0],ivMat:ivMat};
+        this.oP = 0;
     }
     updateSimple() 
     {
@@ -222,6 +236,10 @@ class VoltageSource
         // ctx.stroke(compPath);
         ctx.resetTransform();
     }
+    drawCurrentOverlay(getScreenPos)
+    {
+        basicOverlay(this,getScreenPos);
+    }
     /**
      * @param {MousePositions}positions
      */
@@ -255,7 +273,7 @@ class Resistor
         
 
         this.simple = {nodes:[0,0],ivMat:ivMat};
-        this.t = 0;
+        this.oP = 0;
     }
     updateSimple() 
     {
@@ -307,9 +325,10 @@ class Resistor
 
         ctx.stroke(restPath);
         ctx.resetTransform();
-
-        drawCurrentOverlay(a,b,this.i,this.t);
-        this.t+= 0.01;
+    }
+    drawCurrentOverlay(getScreenPos)
+    {
+        basicOverlay(this,getScreenPos);
     }
     /**
      * @param {MousePositions}positions
@@ -440,6 +459,7 @@ class Wire
         
 
         this.simple = {nodes:[0,0],ivMat:ivMat};
+        this.oP = 0;
     }
     updateSimple() 
     {
@@ -464,6 +484,10 @@ class Wire
         ctx.moveTo(a[0],a[1]);
         ctx.lineTo(b[0],b[1]);
         ctx.stroke();
+    }
+    drawCurrentOverlay(getScreenPos)
+    {
+        basicOverlay(this,getScreenPos);
     }
     /**
      * @param {MousePositions}positions
@@ -523,5 +547,9 @@ class Ground
             return true;
         }
         return false;
+    }
+    drawCurrentOverlay()
+    {
+
     }
 }
