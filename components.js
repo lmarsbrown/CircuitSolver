@@ -73,18 +73,6 @@ function hoverNode(positions,comp)
     }
 }
 
-function dragNodeDefault(comp,positions,conn)
-{
-    if(
-        Matrix.vecDist(positions.roundPos, comp.connections[conn][1]) > 0.1 &&
-        Matrix.vecDist(positions.roundPos, comp.connections[1-conn][1]) > 0.1
-        )
-    {
-        Matrix.copyMat(positions.roundPos,comp.connections[conn][1]);
-        return true;
-    }
-    return false;
-}
 
 
 /**
@@ -95,7 +83,7 @@ function dragNodeDefault(comp,positions,conn)
  */
 
 
-var currentSpeed = 5/100;
+var currentSpeed = 1/100;
 //NOTE make current not adjust position
 function drawCurrentOverlay(p1,p2,t)
 {
@@ -124,16 +112,6 @@ function drawCurrentOverlay(p1,p2,t)
         }
     }
 }
-function basicOverlay(comp,getScreenPos)
-{
-    let p1 = comp.connections[0][1];
-    let p2 = comp.connections[1][1];
-    let a = getScreenPos(p1);
-    let b = getScreenPos(p2);
-    drawCurrentOverlay(a,b,comp.oP);
-    comp.oP+= comp.i*currentSpeed;
-    comp.oP %= 1;
-}
 
 
 getSymbolImg("resistor.svg",(data,paths)=>{
@@ -159,10 +137,64 @@ getSymbolImg("capacitor.svg",(data)=>{
 });
 
 
-class VoltageSource
+class Component
+{
+    constructor()
+    {
+        this.oP = 0;
+        this.width = 0.7;
+        this.selected = false;
+    }
+    drag(positions,conn)
+    {
+        if(
+            Matrix.vecDist(positions.roundPos, this.connections[conn][1]) > 0.1 &&
+            Matrix.vecDist(positions.roundPos, this.connections[1-conn][1]) > 0.1
+            )
+        {
+            Matrix.copyMat(positions.roundPos,this.connections[conn][1]);
+            return true;
+        }
+        return false;
+    }
+    drawCurrentOverlay()
+    {
+        let p1 = this.connections[0][1];
+        let p2 = this.connections[1][1];
+        let a = getScreenPos(p1);
+        let b = getScreenPos(p2);
+        drawCurrentOverlay(a,b,this.oP);
+        this.oP+= this.i*currentSpeed;
+        this.oP %= 1;
+    }
+    isHovered()
+    {
+        let pos = getGridPos(mouse.pos);
+        let p0 = this.connections[0][1];
+        let p1 = this.connections[1][1];
+
+        pos = Matrix.subVecs(pos,p0);
+        let line = Matrix.subVecs(p1,p0);
+        let lLen = Matrix.vecLength(line);
+
+        let lineY = (pos[0]*line[0]+pos[1]*line[1])/(lLen);
+        let lineX = (pos[1]*line[0]-pos[0]*line[1])/(lLen);
+
+        return lineY>0 && lineY < lLen &&
+               Math.abs(lineX) < this.width;
+            
+
+
+    }
+
+}
+
+
+class VoltageSource extends Component
 {
     constructor(voltage,p1,p2)
     {
+        super();
         this.type = VoltageSource;
 
         this.connections = [
@@ -181,14 +213,13 @@ class VoltageSource
         
 
         this.simple = {nodes:[0,0],ivMat:ivMat};
-        this.oP = 0;
     }
     updateSimple() 
     {
         this.simple.nodes[0]= this.connections[0][0];
         this.simple.nodes[1]= this.connections[1][0];
     }
-    draw(getScreenPos)
+    draw()
     {
         const lineWidth = 5;
         const compLen = (getScreenPos(Matrix.vec(0.5,0))[0]-getScreenPos(Matrix.vec(0,0))[0]);
@@ -214,8 +245,20 @@ class VoltageSource
         ctx.rotate(Math.atan2(line[1],line[0]));
         ctx.lineWidth = lineWidth/scale;
 
-        let col0 = getVoltageColor(this.connections[0][2]);
-        let col1 = getVoltageColor(this.connections[1][2]);
+        
+
+        let col0;
+        let col1;
+        if(this.selected)
+        {
+            col0 = `rgb(0,255,255)`;
+            col1 = `rgb(0,255,255)`;
+        }
+        else
+        {
+            col0 = getVoltageColor(this.connections[0][2]);
+            col1 = getVoltageColor(this.connections[1][2]);
+        }
 
         ctx.strokeStyle = col0;
 
@@ -236,24 +279,14 @@ class VoltageSource
         // ctx.stroke(compPath);
         ctx.resetTransform();
     }
-    drawCurrentOverlay(getScreenPos)
-    {
-        basicOverlay(this,getScreenPos);
-    }
-    /**
-     * @param {MousePositions}positions
-     */
-    drag(positions,conn)
-    {
-        return dragNodeDefault(this,positions,conn);
-    }
 }
 
-class Resistor
+class Resistor extends Component
 {
     static symbol;
     constructor(resistance,p1,p2)
     {
+        super();
         this.type = Resistor;
         this.defaultSize = 3;
 
@@ -273,7 +306,6 @@ class Resistor
         
 
         this.simple = {nodes:[0,0],ivMat:ivMat};
-        this.oP = 0;
     }
     updateSimple() 
     {
@@ -283,7 +315,7 @@ class Resistor
      /**
      * @param {CanvasRenderingContext2D}ctx
      */
-    draw(getScreenPos)
+    draw()
     {
         let resistorSize = Math.min(Matrix.vecDist(this.connections[0][1],this.connections[1][1]),this.defaultSize)
         const lineWidth = 5;
@@ -310,12 +342,19 @@ class Resistor
         ctx.rotate(Math.atan2(line[1],line[0]));
         ctx.lineWidth = lineWidth/scale;
 
-        var grd = ctx.createLinearGradient(0,0,1000,0);
-
-        grd.addColorStop(0, getVoltageColor(this.connections[0][2]));
-        grd.addColorStop(1, getVoltageColor(this.connections[1][2]));
-
-        ctx.strokeStyle = grd;
+        if(this.selected)
+        {
+            ctx.strokeStyle = `rgb(0,255,255)`;
+        }
+        else
+        {
+            var grd = ctx.createLinearGradient(0,0,1000,0);
+    
+            grd.addColorStop(0, getVoltageColor(this.connections[0][2]));
+            grd.addColorStop(1, getVoltageColor(this.connections[1][2]));
+    
+            ctx.strokeStyle = grd;
+        }
 
         let restPath = new Path2D();
         restPath.moveTo(-transWireLen,0);
@@ -325,17 +364,6 @@ class Resistor
 
         ctx.stroke(restPath);
         ctx.resetTransform();
-    }
-    drawCurrentOverlay(getScreenPos)
-    {
-        basicOverlay(this,getScreenPos);
-    }
-    /**
-     * @param {MousePositions}positions
-     */
-    drag(positions,conn)
-    {
-        return dragNodeDefault(this,positions,conn);
     }
 }
 
@@ -437,12 +465,12 @@ class Inductor extends CurrentSource
     }
 }
 
-class Wire
+class Wire extends Component
 {
     constructor(p1,p2)
     {
-        
-
+        super();
+        this.type = Wire;
         this.connections = [
             [0,p1,0],
             [0,p2,0]
@@ -459,7 +487,6 @@ class Wire
         
 
         this.simple = {nodes:[0,0],ivMat:ivMat};
-        this.oP = 0;
     }
     updateSimple() 
     {
@@ -469,7 +496,7 @@ class Wire
      /**
      * @param {CanvasRenderingContext2D}ctx
      */
-    draw(getScreenPos)
+    draw()
     {
         let p1 = this.connections[0][1];
         let p2 = this.connections[1][1];
@@ -484,17 +511,6 @@ class Wire
         ctx.moveTo(a[0],a[1]);
         ctx.lineTo(b[0],b[1]);
         ctx.stroke();
-    }
-    drawCurrentOverlay(getScreenPos)
-    {
-        basicOverlay(this,getScreenPos);
-    }
-    /**
-     * @param {MousePositions}positions
-     */
-    drag(positions,conn)
-    {
-        return dragNodeDefault(this,positions,conn);
     }
 }
 
@@ -525,7 +541,7 @@ class Ground
         this.simple.nodes[0] = this.connections[0][0];
         this.simple.nodes[1] = 0;
     }
-    draw(getScreenPos)
+    draw()
     {
         let p = this.connections[0][1];
         let loc = getScreenPos(p);
@@ -551,5 +567,9 @@ class Ground
     drawCurrentOverlay()
     {
 
+    }
+    isHovered()
+    {
+        return false;
     }
 }
