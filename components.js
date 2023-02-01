@@ -145,7 +145,7 @@ class Component
         this.width = 0.7;
         this.selected = false;
     }
-    drag(positions,conn)
+    dragNode(positions,conn)
     {
         if(
             Matrix.vecDist(positions.roundPos, this.connections[conn][1]) > 0.1 &&
@@ -156,6 +156,22 @@ class Component
             return true;
         }
         return false;
+    }
+    drag()
+    {
+        let pos = getGridPos(mouse.pos);
+        Matrix.roundVec(pos);
+        let downPos = getGridPos(mouse.downPos);
+        Matrix.roundVec(downPos);
+        let diff = Matrix.subVecs(pos,downPos);
+        if(Matrix.vecLength(diff)>0.1)
+        {
+            for(let i = 0; i < this.connections.length; i++)
+            {
+                this.connections[i][1] = Matrix.addVecs(this.connections[i][1],diff);
+            }
+        }
+        Matrix.copyMat(mouse.pos,mouse.downPos);
     }
     drawCurrentOverlay()
     {
@@ -506,7 +522,14 @@ class Wire extends Component
         
         ctx.lineWidth = 5;
 
-        ctx.strokeStyle = getVoltageColor(this.connections[0][2]);
+        if(this.selected)
+        {
+            ctx.strokeStyle = `rgb(0,255,255)`;
+        }
+        else
+        {
+            ctx.strokeStyle = getVoltageColor(this.connections[0][2]);
+        }
         ctx.beginPath();
         ctx.moveTo(a[0],a[1]);
         ctx.lineTo(b[0],b[1]);

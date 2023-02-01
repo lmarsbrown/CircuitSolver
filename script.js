@@ -161,6 +161,20 @@ function mouseHover()
             break;
         }
     }
+    if(currentCompHover != undefined)
+    {
+        currentCompHover.selected = false
+        currentCompHover = undefined;
+    }
+    for(let i = 0; i < comps.length; i++)
+    {
+        if(comps[i].isHovered())
+        {
+            comps[i].selected = true;
+            currentCompHover = comps[i];
+            break;
+        }
+    }
     
     let localNode = getGridNode(roundPos[0],roundPos[1])
     
@@ -186,22 +200,18 @@ function mouseHover()
 
 function dragNode()
 {
-    if(currentNodeHover!=undefined)
+    let screenPos = mouse.pos;
+    let gridPos = getGridPos(screenPos);
+    let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
+    let roundScreenPos = getScreenPos(Matrix.vec(roundPos[0],roundPos[1]));
+
+    let positions = {screenPos:screenPos,gridPos:gridPos,roundPos:roundPos,roundScreenPos:roundScreenPos};
+    let dragSuccess = comps[currentNodeHover[0]].dragNode(positions,currentNodeHover[1]);
+    if(dragSuccess)
     {
-        let screenPos = mouse.pos;
-        let gridPos = getGridPos(screenPos);
-        let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
-        let roundScreenPos = getScreenPos(Matrix.vec(roundPos[0],roundPos[1]));
-    
-        let positions = {screenPos:screenPos,gridPos:gridPos,roundPos:roundPos,roundScreenPos:roundScreenPos};
-        let dragSuccess = comps[currentNodeHover[0]].drag(positions,currentNodeHover[1]);
-        if(dragSuccess)
-        {
-            console.log("success")
-            parseCircuit();
-            solveCircuit();
-        }
-        
+        console.log("success")
+        parseCircuit();
+        solveCircuit();
     }
 }
 
@@ -226,11 +236,13 @@ let pV = 0;
 let pD = 0;
 let max = 0;
     
-var mouse = {pos:Matrix.vec(2),down:false};
+var mouse = {pos:Matrix.vec(2),downPos:Matrix.vec(2),down:false};
 
 var dragMode = 0;
 var currentNodeHover;
 var currentCompHover;
+
+
 
     
 var comps = [
@@ -290,7 +302,15 @@ function draw()
     else
     {
 
-        dragNode();
+        if(currentNodeHover!=undefined)
+        {
+            dragNode();
+        }
+        else if(currentCompHover != undefined)
+        {
+            currentCompHover.drag();
+        }
+    
     }
 
     requestAnimationFrame(draw);
@@ -307,6 +327,8 @@ function main()
     });
     can.addEventListener("mousedown",()=>{
         mouse.down = true;
+        mouse.downPos[0] = mouse.pos[0];
+        mouse.downPos[1] = mouse.pos[1];
         if(dragMode != 0)
         {
             let pos = getGridPos(mouse.pos);

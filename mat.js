@@ -297,6 +297,13 @@ class Matrix
         }
         console.log(out);
     }
+    static roundVec(vec)
+    {
+        for(let i = 0; i < vec.length; i++)
+        {
+            vec[i] = Math.round(vec[i]);
+        }
+    }
 
     static mat(size)
     {
