@@ -42,7 +42,11 @@ class Wire extends Component
 
         if(this.selected)
         {
-            ctx.strokeStyle = `rgb(0,255,255)`;
+            ctx.strokeStyle = selectColor;
+        }
+        else if(this.editing)
+        {
+            ctx.strokeStyle = editColor;
         }
         else
         {

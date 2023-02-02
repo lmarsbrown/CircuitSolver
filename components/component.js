@@ -45,6 +45,9 @@ function loadImage()
     }
 }
 
+const selectColor = `rgb(0,255,255)`;
+const editColor = `rgb(255,0,255)`;
+
 /**
  * 
  * @typedef MousePositions
@@ -144,6 +147,7 @@ class Component
         this.width = 0.7;
         this.lineWidth = 5;
         this.selected = false;
+        this.editing = false;
     }
     dragNode(positions,conn)
     {

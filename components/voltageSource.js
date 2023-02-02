@@ -60,8 +60,13 @@ class VoltageSource extends Component
         let col1;
         if(this.selected)
         {
-            col0 = `rgb(0,255,255)`;
-            col1 = `rgb(0,255,255)`;
+            col0 = selectColor;
+            col1 = selectColor;
+        }
+        else if(this.editing)
+        {
+            col0 = editColor;
+            col1 = editColor;
         }
         else
         {

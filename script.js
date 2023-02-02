@@ -249,7 +249,6 @@ function main()
             can.style.cursor="crosshair";
             if(currentCompHover != undefined)
             {
-                console.log("TEST")
                 currentCompHover.selected = false;
                 currentCompHover = undefined;
             }
