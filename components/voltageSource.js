@@ -31,7 +31,6 @@ class VoltageSource extends Component
     }
     draw()
     {
-        const lineWidth = 5;
         const compLen = (getScreenPos(Matrix.vec(0.5,0))[0]-getScreenPos(Matrix.vec(0,0))[0]);
         let p1 = this.connections[0][1];
         let p2 = this.connections[1][1];
@@ -53,7 +52,7 @@ class VoltageSource extends Component
         ctx.translate(compStart[0],compStart[1]);
         ctx.scale(scale,scale);
         ctx.rotate(Math.atan2(line[1],line[0]));
-        ctx.lineWidth = lineWidth/scale;
+        ctx.lineWidth = this.lineWidth /scale;
 
         
 

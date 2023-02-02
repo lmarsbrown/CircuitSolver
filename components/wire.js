@@ -38,7 +38,7 @@ class Wire extends Component
         let b = getScreenPos(p2);
         
         
-        ctx.lineWidth = 5;
+        ctx.lineWidth = this.lineWidth;
 
         if(this.selected)
         {

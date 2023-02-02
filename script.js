@@ -8,49 +8,51 @@ function mouseHover()
     let roundScreenPos = getScreenPos(Matrix.vec(roundPos[0],roundPos[1]));
 
     let positions = {screenPos:mouse.pos,gridPos:gridPos,roundPos:roundPos,roundScreenPos:roundScreenPos};
+    
+    if(currentCompHover != undefined)
+    {
+        if(!currentCompHover.isHovered())
+        {
+            currentCompHover.selected = false
+            currentCompHover = undefined;
+        }
+    }
+
+    if(currentCompHover == undefined)
+    {
+        for(let i = 0; i < comps.length; i++)
+        {
+            if(comps[i].isHovered())
+            {
+                comps[i].selected = true;
+                currentCompHover = comps[i];
+                break;
+            }
+        }
+    }
 
     currentNodeHover = undefined;
     for(let i = 0; i < comps.length; i++)
     {
         let c = comps[i];
-        let hover = hoverNode(positions,c);
+        if(c == currentCompHover)
+        {
+            let hover = hoverNode(positions,c);
+    
+            if(hover != undefined)
+            {
+                currentNodeHover = [i,hover];
+                break;
+            }
+        }
+    }
 
-        if(hover != undefined)
-        {
-            currentNodeHover = [i,hover];
-            break;
-        }
-    }
-    if(currentCompHover != undefined)
+    if(currentNodeHover!=undefined)
     {
-        currentCompHover.selected = false
-        currentCompHover = undefined;
-    }
-    for(let i = 0; i < comps.length; i++)
-    {
-        if(comps[i].isHovered())
-        {
-            comps[i].selected = true;
-            currentCompHover = comps[i];
-            break;
-        }
-    }
-    
-    let localNode = getGridNode(roundPos[0],roundPos[1])
-    
-    if(localNode != 0)
-    {
+        let localNode = getGridNode(roundPos[0],roundPos[1])
         document.getElementById("DataPanel").innerText = "Node Voltage: "+ nVoltages[localNode-2];
-        if(localNode>1)
-        {
-            ctx.fillStyle = `rgb(0,0,255)`;
-            drawGridNode(roundPos[0],roundPos[1],8);
-        }
-        if(localNode==1)
-        {
-            ctx.fillStyle = `rgb(100,100,100)`;
-            drawGridNode(roundPos[0],roundPos[1],8);
-        }
+        ctx.fillStyle = `rgb(0,0,255)`;
+        drawGridNode(roundPos[0],roundPos[1],8);
     }
     else if(currentCompHover!=undefined)
     {
@@ -60,6 +62,31 @@ function mouseHover()
     {
         document.getElementById("DataPanel").innerText = "";
     }
+
+    // let localNode = getGridNode(roundPos[0],roundPos[1])
+    
+    // if(localNode != 0)
+    // {
+    //     document.getElementById("DataPanel").innerText = "Node Voltage: "+ nVoltages[localNode-2];
+    //     if(localNode>1)
+    //     {
+    //         ctx.fillStyle = `rgb(0,0,255)`;
+    //         drawGridNode(roundPos[0],roundPos[1],8);
+    //     }
+    //     if(localNode==1)
+    //     {
+    //         ctx.fillStyle = `rgb(100,100,100)`;
+    //         drawGridNode(roundPos[0],roundPos[1],8);
+    //     }
+    // }
+    // else if(currentCompHover!=undefined)
+    // {
+    //     document.getElementById("DataPanel").innerText = "Current: " + currentCompHover.i;
+    // }
+    // else
+    // {
+    //     document.getElementById("DataPanel").innerText = "";
+    // }
 }
 
 function dragNode()
@@ -108,6 +135,8 @@ var currentCompHover;
 
 
 
+
+
     
 var comps = [
 ];
@@ -137,7 +166,6 @@ function main()
             let rPos1 = Matrix.vec(Math.round(pos[0]),Math.round(pos[1]));
             let rPos2 = Matrix.vec(2);
             Matrix.copyMat(rPos1,rPos2);
-            rPos1[0]++;
             let newComp;
             switch(dragMode)
             {
@@ -171,6 +199,14 @@ function main()
     });
     can.addEventListener("mouseup",()=>{
         mouse.down = false;
+        if(dragMode!=0)
+        {
+            if(comps[currentNodeHover[0]].isCollapsed())
+            {
+                comps.splice(currentNodeHover[0],1);
+            }
+            parseCircuit();
+        }
     });
     window.addEventListener("keydown",(event)=>{
         switch(event.key)
@@ -211,6 +247,12 @@ function main()
         else
         {
             can.style.cursor="crosshair";
+            if(currentCompHover != undefined)
+            {
+                console.log("TEST")
+                currentCompHover.selected = false;
+                currentCompHover = undefined;
+            }
         }
         console.log(event.key)
     })

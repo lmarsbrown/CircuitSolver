@@ -1,10 +1,10 @@
 
-class Ground
+class Ground extends Component
 {
     constructor(position)
     {
         
-
+        super();
         this.connections = [
             [0,position,0]
         ];
@@ -54,6 +54,10 @@ class Ground
 
     }
     isHovered()
+    {
+        return false;
+    }
+    isCollapsed()
     {
         return false;
     }

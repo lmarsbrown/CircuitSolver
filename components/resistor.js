@@ -36,7 +36,6 @@ class Resistor extends Component
     draw()
     {
         let resistorSize = Math.min(Matrix.vecDist(this.connections[0][1],this.connections[1][1]),this.defaultSize)
-        const lineWidth = 5;
         const restLen = (getScreenPos(Matrix.vec(resistorSize,0))[0]-getScreenPos(Matrix.vec(0,0))[0]);
         let p1 = this.connections[0][1];
         let p2 = this.connections[1][1];
@@ -58,7 +57,7 @@ class Resistor extends Component
         ctx.translate(restStart[0],restStart[1]);
         ctx.scale(scale,scale);
         ctx.rotate(Math.atan2(line[1],line[0]));
-        ctx.lineWidth = lineWidth/scale;
+        ctx.lineWidth = this.lineWidth/scale;
 
         if(this.selected)
         {

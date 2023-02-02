@@ -142,6 +142,7 @@ class Component
     {
         this.oP = 0;
         this.width = 0.7;
+        this.lineWidth = 5;
         this.selected = false;
     }
     dragNode(positions,conn)
@@ -198,10 +199,13 @@ class Component
         let lineY = (pos[0]*line[0]+pos[1]*line[1])/(lLen);
         let lineX = (pos[1]*line[0]-pos[0]*line[1])/(lLen);
 
-        return lineY>0 && lineY < lLen &&
+        let gridLinewidth = getGridPos(Matrix.vec(this.lineWidth,0))[0] - getGridPos(Matrix.vec(0,0))[0]
+
+        return lineY>-gridLinewidth && lineY < (lLen+gridLinewidth) &&
                Math.abs(lineX) < this.width;
-            
-
-
+    }
+    isCollapsed()
+    {
+        return Matrix.vecDist(this.connections[0][1],this.connections[1][1])<0.1;
     }
 }
