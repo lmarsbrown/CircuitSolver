@@ -40,13 +40,13 @@ class Wire extends Component
         
         ctx.lineWidth = this.lineWidth;
 
-        if(this.selected)
-        {
-            ctx.strokeStyle = selectColor;
-        }
-        else if(this.editing)
+        if(this.editing)
         {
             ctx.strokeStyle = editColor;
+        }
+        else if(this.selected)
+        {
+            ctx.strokeStyle = selectColor;
         }
         else
         {

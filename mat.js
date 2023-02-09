@@ -140,6 +140,7 @@ class Matrix
         for(let x = 0; x < width; x++)
         {
             let corn = Matrix.getElement(proccesingMat,x,x);
+            Matrix.logMat(proccesingMat);
             if(corn == 0)
             {
                 for(let y = x+1; corn == 0; y++)

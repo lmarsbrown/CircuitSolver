@@ -59,13 +59,13 @@ class Resistor extends Component
         ctx.rotate(Math.atan2(line[1],line[0]));
         ctx.lineWidth = this.lineWidth/scale;
 
-        if(this.selected)
-        {
-            ctx.strokeStyle = selectColor;
-        }
-        else if(this.editing)
+        if(this.editing)
         {
             ctx.strokeStyle = editColor;
+        }
+        else if(this.selected)
+        {
+            ctx.strokeStyle = selectColor;
         }
         else
         {

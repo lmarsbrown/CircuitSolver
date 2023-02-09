@@ -1,261 +1,93 @@
+/*
+
+   v0, v1, v2, is
+i0 
+i1 
+i2
+vs
+
+ */
 
 
+let nodes= 3;
 
-function mouseHover()
+let independents = getNodeInd();
+let dependents = [];
+
+appendConstraints(getResistor  (0,1,1));
+appendConstraints(getResistor  (1,2,1));
+appendConstraints(getVoltageSrc(2,0,1));
+solveCircuit(independents,dependents);
+
+
+function solveCircuit(ind,dep)
 {
-    let gridPos = getGridPos(mouse.pos);
-    let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
-    let roundScreenPos = getScreenPos(Matrix.vec(roundPos[0],roundPos[1]));
-
-    let positions = {screenPos:mouse.pos,gridPos:gridPos,roundPos:roundPos,roundScreenPos:roundScreenPos};
-    
-    if(currentCompHover != undefined)
+    let mat = Matrix.mat(ind.length);
+    for(let i = 0; i < dep.length; i++)
     {
-        if(!currentCompHover.isHovered())
-        {
-            currentCompHover.selected = false
-            currentCompHover = undefined;
-        }
+        let c = dep[i];
+        Matrix.addElement(mat,c[0],c[1],c[2]);
     }
-
-    if(currentCompHover == undefined)
-    {
-        for(let i = 0; i < comps.length; i++)
-        {
-            if(comps[i].isHovered())
-            {
-                comps[i].selected = true;
-                currentCompHover = comps[i];
-                break;
-            }
-        }
-    }
-
-    currentNodeHover = undefined;
-    for(let i = 0; i < comps.length; i++)
-    {
-        let c = comps[i];
-        if(c == currentCompHover)
-        {
-            let hover = hoverNode(positions,c);
-    
-            if(hover != undefined)
-            {
-                currentNodeHover = [i,hover];
-                break;
-            }
-        }
-    }
-
-    if(currentNodeHover!=undefined)
-    {
-        let localNode = getGridNode(roundPos[0],roundPos[1])
-        document.getElementById("DataPanel").innerText = "Node Voltage: "+ nVoltages[localNode-2];
-        ctx.fillStyle = `rgb(0,0,255)`;
-        drawGridNode(roundPos[0],roundPos[1],8);
-    }
-    else if(currentCompHover!=undefined)
-    {
-        document.getElementById("DataPanel").innerText = "Current: " + currentCompHover.i;
-    }
-    else
-    {
-        document.getElementById("DataPanel").innerText = "";
-    }
-
-    // let localNode = getGridNode(roundPos[0],roundPos[1])
-    
-    // if(localNode != 0)
-    // {
-    //     document.getElementById("DataPanel").innerText = "Node Voltage: "+ nVoltages[localNode-2];
-    //     if(localNode>1)
-    //     {
-    //         ctx.fillStyle = `rgb(0,0,255)`;
-    //         drawGridNode(roundPos[0],roundPos[1],8);
-    //     }
-    //     if(localNode==1)
-    //     {
-    //         ctx.fillStyle = `rgb(100,100,100)`;
-    //         drawGridNode(roundPos[0],roundPos[1],8);
-    //     }
-    // }
-    // else if(currentCompHover!=undefined)
-    // {
-    //     document.getElementById("DataPanel").innerText = "Current: " + currentCompHover.i;
-    // }
-    // else
-    // {
-    //     document.getElementById("DataPanel").innerText = "";
-    // }
-}
-
-function dragNode()
-{
-    let screenPos = mouse.pos;
-    let gridPos = getGridPos(screenPos);
-    let roundPos = [Math.round(gridPos[0]),Math.round(gridPos[1])];
-    let roundScreenPos = getScreenPos(Matrix.vec(roundPos[0],roundPos[1]));
-
-    let positions = {screenPos:screenPos,gridPos:gridPos,roundPos:roundPos,roundScreenPos:roundScreenPos};
-    let dragSuccess = comps[currentNodeHover[0]].dragNode(positions,currentNodeHover[1]);
-    if(dragSuccess)
-    {
-        console.log("success")
-        parseCircuit();
-        solveCircuit();
-    }
+    let outMat = Matrix.mat(ind.length);
+    console.log(Matrix.invert(mat,outMat));
+    let out = Matrix.mulVec(outMat,ind);
+    Matrix.logVec(out);
+    Matrix.logMat(mat);
 }
 
 
-let can = document.createElement("canvas");
-const canW = 600;
-const canH = 600;
-can.width = canW;
-can.height = canH;
-document.body.appendChild(can);
-let ctx = can.getContext("2d");
-
-const gridW = 20;
-const gridH = 20;
-var grid = new Uint16Array(gridW*gridH);
-var currentNode = 2;
-var nVoltages = [];
-var dT =   50/(1000);
-var t = 0;
-
-let pV = 0;
-let pD = 0;
-let max = 0;
-    
-var mouse = {pos:Matrix.vec(2),downPos:Matrix.vec(2),down:false};
-
-var dragMode = 0;
-var currentNodeHover;
-var currentCompHover;
-
-
-
-
-
-    
-var comps = [
-];
-
-function deleteHovered()
+/*
+Constraint: [in (voltage),out (current),val]
+*/
+function getResistor(n1,n2,r)
 {
-    if(currentCompHover != undefined)
+    let indep = [];
+    let dep = [
+        //n1 current
+        [n1,n1, -1/r],
+        [n2,n1,  1/r],
+        //n2 current
+        [n1,n2,  1/r],
+        [n2,n2, -1/r]
+    ];
+    return [indep,dep];
+}
+function getVoltageSrc(n1,n2,v)
+{
+    let indep = [v];
+    let iInd = independents.length;
+    console.log(iInd);
+    let dep = [
+        //n1 voltage
+        [n1,iInd, -1],
+        [n2,iInd,  1],
+        //n1 current
+        [iInd,n1, -1],
+        //n2 current
+        [iInd,n2,  1],
+    ];
+    return [indep,dep];
+}
+
+
+function appendConstraints(comp)
+{
+    for(let i = 0; i < comp[0].length; i++)
     {
-        comps.splice(comps.findIndex((ele)=>{ele == currentCompHover}),1);
-        parseCircuit();
+        independents.push(comp[0][i]);
+    }
+    for(let i = 0; i < comp[1].length; i++)
+    {
+        dependents.push(comp[1][i]);
     }
 }
 
-function main()
+function getNodeInd()
 {
-    can.addEventListener("mousemove",(event)=>{
-        mouse.pos[0] = event.offsetX;
-        mouse.pos[1] = event.offsetY;
-    });
-    can.addEventListener("mousedown",()=>{
-        mouse.down = true;
-        mouse.downPos[0] = mouse.pos[0];
-        mouse.downPos[1] = mouse.pos[1];
-        if(dragMode != 0)
-        {
-            let pos = getGridPos(mouse.pos);
-            let rPos1 = Matrix.vec(Math.round(pos[0]),Math.round(pos[1]));
-            let rPos2 = Matrix.vec(2);
-            Matrix.copyMat(rPos1,rPos2);
-            let newComp;
-            switch(dragMode)
-            {
-                case 1:
-                    newComp = new Wire(rPos1,rPos2);
-                    break;
-                case 2:
-                    newComp = new Ground(rPos1);
-                    break;
-                case 3:
-                    newComp = new Resistor(10,rPos1,rPos2);
-                    break;
-                case 4:
-                    newComp = new VoltageSource(5,rPos1,rPos2);
-                    break;
-                case 5:
-                    newComp = new CurrentSource(10,rPos1,rPos2);
-                    break;
-                case 6:
-                    newComp = new Inductor(0,1,rPos1,rPos2);
-                    break;
-                case 7:
-                    newComp = new Capacitor(0,10,rPos1,rPos2);
-                    break;
-            }
-
-            comps.push(newComp);
-            currentNodeHover = [comps.length-1,0];
-            parseCircuit();
-        }
-    });
-    can.addEventListener("mouseup",()=>{
-        mouse.down = false;
-        if(dragMode!=0)
-        {
-            if(comps[currentNodeHover[0]].isCollapsed())
-            {
-                comps.splice(currentNodeHover[0],1);
-            }
-            parseCircuit();
-        }
-    });
-    window.addEventListener("keydown",(event)=>{
-        switch(event.key)
-        {
-            case "Escape":
-                dragMode = 0;
-                break;
-            case "w":
-                dragMode = 1;
-                break;
-            case "g":
-                dragMode = 2;
-                break;
-            case "r":
-                dragMode = 3;
-                break;
-            case "v":
-                dragMode = 4;
-                break;
-            case "i":
-                dragMode = 5;
-                break;
-            case "l":
-                dragMode = 6;
-                break;
-            case "c":
-                dragMode = 7;
-                break;
-            case "Delete":
-            case "Backspace":
-                deleteHovered();
-                break;
-        }
-        if(dragMode == 0)
-        {
-            can.style.cursor="";
-        }
-        else
-        {
-            can.style.cursor="crosshair";
-            if(currentCompHover != undefined)
-            {
-                currentCompHover.selected = false;
-                currentCompHover = undefined;
-            }
-        }
-        console.log(event.key)
-    })
-    parseCircuit()
-    draw();
+    let out = [];
+    for(let i = 0; i < nodes; i++)
+    {
+        out[i] = 0;
+    }
+    return out;
 }
-
