@@ -140,11 +140,14 @@ class Matrix
         for(let x = 0; x < width; x++)
         {
             let corn = Matrix.getElement(proccesingMat,x,x);
-            Matrix.logMat(proccesingMat);
             if(corn == 0)
             {
-                for(let y = x+1; corn == 0; y++)
+                for(let y = x+1; corn == 0&&y<=width; y++)
                 {
+                    if(y == width)
+                    {
+                        return false;
+                    }
                     if(Matrix.getElement(proccesingMat,x,y) != 0)
                     {
                         Matrix.addScaleRow(proccesingMat,proccesingMat,1,y,x);

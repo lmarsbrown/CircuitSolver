@@ -12,24 +12,54 @@ class Resistor extends Component
             [0,p1,0],
             [0,p2,0]
         ];
+        this.resistance = resistance;
 
-        let ivMat = Matrix.mat(2);
-        ivMat[0] = resistance;
-        ivMat[1] = 0;
-        ivMat[2] = 1;
-        ivMat[3] = 0;
-        
-        this.v = 0;
-        this.i = 0;
-        
-
-        this.simple = {nodes:[0,0],ivMat:ivMat};
+        let n1 = this.connections[0][0]; 
+        let n2 = this.connections[1][0]; 
+        this.deps = [
+            //n1 current
+            [n1,n1, -1/resistance],
+            [n2,n1,  1/resistance],
+            //n2 current
+            [n1,n2,  1/resistance],
+            [n2,n2, -1/resistance]
+        ];
     }
-    updateSimple() 
+    getDependents()
     {
-        this.simple.nodes[0]= this.connections[0][0];
-        this.simple.nodes[1]= this.connections[1][0];
+        if(!this.isCollapsed())
+        {
+            let n1 = this.connections[0][0]; 
+            let n2 = this.connections[1][0]; 
+            
+            this.deps[0][0] = n1;
+            this.deps[0][1] = n1;
+            
+            this.deps[1][0] = n2;
+            this.deps[1][1] = n1;
+            
+            this.deps[2][0] = n1;
+            this.deps[2][1] = n2;
+            
+            this.deps[3][0] = n2;
+            this.deps[3][1] = n2;
+    
+            return this.deps;
+        }
+        else
+        {
+            return [];
+        }
     }
+    updateValues(outVec)
+    {
+        if(!this.isCollapsed())
+        {
+            super.updateValues(outVec);
+            this.i = this.v/this.resistance;
+        }
+    }
+
      /**
      * @param {CanvasRenderingContext2D}ctx
      */
@@ -86,4 +116,5 @@ class Resistor extends Component
         ctx.stroke(restPath);
         ctx.resetTransform();
     }
+
 }

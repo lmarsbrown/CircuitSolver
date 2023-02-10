@@ -148,6 +148,9 @@ class Component
         this.lineWidth = 5;
         this.selected = false;
         this.editing = false;
+        
+        this.v = 0;
+        this.i = 0;
     }
     dragNode(positions,conn)
     {
@@ -211,5 +214,21 @@ class Component
     isCollapsed()
     {
         return Matrix.vecDist(this.connections[0][1],this.connections[1][1])<0.1;
+    }
+    getDependents()
+    {
+        return [];
+    }
+    getIndependents(count)
+    {
+        return [];
+    }
+    updateValues(outVec)
+    {
+        for(let i = 0; i < this.connections.length; i++)
+        {
+            this.connections[i][2] = outVec[this.connections[i][0]];
+        }
+        this.v = this.connections[1][2]-this.connections[0][2];
     }
 }

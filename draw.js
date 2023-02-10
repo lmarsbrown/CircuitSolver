@@ -63,7 +63,6 @@ function draw()
     }
     else
     {
-
         if(currentNodeHover!=undefined)
         {
             dragNode();

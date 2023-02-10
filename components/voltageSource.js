@@ -12,22 +12,46 @@ class VoltageSource extends Component
             [0,p2,0]
         ];
 
-        let ivMat = Matrix.mat(2);
-        ivMat[0] = 0;
-        ivMat[1] = -voltage;
-        ivMat[2] = 1;
-        ivMat[3] = 0;
+        this.voltage = voltage;
         
-        this.v = 0;
-        this.i = 0;
-        
-
-        this.simple = {nodes:[0,0],ivMat:ivMat};
+        this.iInd = 0;
+        let n1 = this.connections[0][0]; 
+        let n2 = this.connections[1][0]; 
+        this.deps = [
+            //voltage
+            [n1,this.iInd, -1],
+            [n2,this.iInd,  1],
+            //n1 current
+            [this.iInd,n1, -1],
+            //n2 current
+            [this.iInd,n2,  1],
+        ];
     }
-    updateSimple() 
+    getIndependents(count)
     {
-        this.simple.nodes[0]= this.connections[0][0];
-        this.simple.nodes[1]= this.connections[1][0];
+        this.iInd = count;
+        return [this.voltage];
+    }
+    getDependents()
+    {
+        let n1 = this.connections[0][0]; 
+        let n2 = this.connections[1][0]; 
+        
+        this.deps[0][0] = n1;
+        this.deps[1][0] = n2;
+        this.deps[2][1] = n1;
+        this.deps[3][1] = n2;
+
+        this.deps[0][1] = this.iInd;
+        this.deps[1][1] = this.iInd;
+        this.deps[2][0] = this.iInd;
+        this.deps[3][0] = this.iInd;
+        return this.deps;
+    }
+    updateValues(outVec)
+    {
+        super.updateValues(outVec);
+        this.i = outVec[this.iInd];
     }
     draw()
     {

@@ -9,22 +9,33 @@ class Ground extends Component
             [0,position,0]
         ];
 
-        let ivMat = Matrix.mat(2);
-        ivMat[0] = 0;
-        ivMat[1] = 0;
-        ivMat[2] = 1;
-        ivMat[3] = 0;
-        
-        this.v = 0;
-        this.i = 0;
-        
-
-        this.simple = {nodes:[0,0],ivMat:ivMat};
+        let node = this.connections[0][0];
+        this.index = 0;
+        this.dep = [
+            //voltage
+            [node,this.index, 1],
+            //n1 current
+            [this.index,node, 1]
+        ];
     }
-    updateSimple() 
+    getIndependents(count)
     {
-        this.simple.nodes[0] = this.connections[0][0];
-        this.simple.nodes[1] = 0;
+        this.index = count;
+        return [0];
+    }
+    getDependents()
+    {
+        let node = this.connections[0][0];
+        this.dep[0][0] = node;
+        this.dep[1][1] = node;
+
+        this.dep[0][1] = this.index;
+        this.dep[1][0] = this.index;
+        return this.dep;
+    }
+    updateValues(outVec)
+    {
+        
     }
     draw()
     {

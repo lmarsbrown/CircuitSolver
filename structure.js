@@ -1,7 +1,7 @@
 
 function populateNodes()
 {
-    currentNode = 2;
+    currentNode = 1;
     for(let i = 0; i < gridW*gridH; i++)
     {
         grid[i] = 0;
@@ -18,8 +18,8 @@ function populateNodes()
             if(node==0)
             {
                 grid[x+y*gridW] = currentNode;
+                c.connections[j][0] = currentNode - 1;
                 currentNode++;
-                c.connections[j][0] = currentNode - 2;
             }
             else
             {
@@ -29,53 +29,84 @@ function populateNodes()
     }
 }
 
+var parseSuccess = false;
+var tsetMat;
+function findCircuitMat(dependents,independents)
+{
+    let mat = Matrix.mat(independents.length);
+    for(let i = 0; i < dependents.length; i++)
+    {
+        let c = dependents[i];
+        Matrix.addElement(mat,c[0],c[1],c[2]);
+    }
+    let outMat = Matrix.mat(independents.length);
+    parseSuccess = Matrix.invert(mat,outMat);
+    tsetMat = mat;
+    return outMat;
+}
+
 function parseCircuit()
 {
     populateNodes();
-    simples = [];
+    depConstraints = [];
+    indConstraints = [];
+    for(let i = 0; i < currentNode-1; i++)
+    {
+        indConstraints.push(0);
+    }
     for(let i = 0; i < comps.length; i++)
     {
-        comps[i].updateSimple();
-        simples.push(comps[i].simple);
-    }
-
-    solveCircuit();
-}
-
-
-function solveCircuit()
-{
-    for(let i = 0; i < comps.length; i++)
-    {
-        comps[i].updateSimple();
-    }
-
-    let solu = Solver.solve(simples,currentNode-1);
-    if(!solu)
-    {
-        return;
-    }
-
-    for(let i = 0; i < simples.length; i++)
-    {
-        let uVec = Matrix.vec(solu[i],1);
-        let ivVec = Matrix.mulVec(simples[i].ivMat,uVec);
-        comps[i].v = ivVec[0];
-        comps[i].i = ivVec[1];
-
-        for(let j = 0; j < comps[i].connections.length; j++)
+        let c = comps[i];
+        let inds = c.getIndependents(indConstraints.length);
+        let deps = c.getDependents();
+        for(let i = 0; i < deps.length; i++)
         {
-            if(comps[i].connections[j][0] != 0)
-            {
-                comps[i].connections[j][2] = solu[comps.length+comps[i].connections[j][0]-1]
-            }
+            depConstraints.push(deps[i]);
+        }
+        for(let i = 0; i < inds.length; i++)
+        {
+            indConstraints.push(inds[i]);
         }
     }
-    nVoltages = [];
-    for(let i = 0; i < currentNode-2; i++)
+    circMat = findCircuitMat(depConstraints,indConstraints);
+}
+var outVex;
+function solveCircuit()
+{
+    let outVec = Matrix.mulVec(circMat,indConstraints);
+    // Matrix.logVec(outVec);
+    outVex = outVec;
+
+    if(parseSuccess)
     {
-        nVoltages[i] = solu[comps.length+i];
+        for(let i = 0; i < comps.length; i++)
+        {
+            comps[i].updateValues(outVec);
+        }
     }
+
+    
+
+    // for(let i = 0; i < simples.length; i++)
+    // {
+    //     let uVec = Matrix.vec(solu[i],1);
+    //     let ivVec = Matrix.mulVec(simples[i].ivMat,uVec);
+    //     comps[i].v = ivVec[0];
+    //     comps[i].i = ivVec[1];
+
+    //     for(let j = 0; j < comps[i].connections.length; j++)
+    //     {
+    //         if(comps[i].connections[j][0] != 0)
+    //         {
+    //             comps[i].connections[j][2] = solu[comps.length+comps[i].connections[j][0]-1]
+    //         }
+    //     }
+    // }
+    // nVoltages = [];
+    // for(let i = 0; i < currentNode-2; i++)
+    // {
+    //     nVoltages[i] = solu[comps.length+i];
+    // }
 }
 
 
@@ -92,4 +123,6 @@ function getGridNode(x,y)
 {
     return grid[x+y*gridW];
 }
-var simples = [];
+var indConstraints = [];
+var depConstraints = [];
+var circMat;
