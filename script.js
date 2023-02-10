@@ -9,15 +9,23 @@ vs
  */
 
 
-let nodes= 3;
 
-let independents = getNodeInd();
 let dependents = [];
+
+let nodes = 3;
+let independents = [];
+for(let i = 0; i < nodes; i++)
+{
+    independents.push(0);
+}
 
 appendConstraints(getResistor  (0,1,1));
 appendConstraints(getResistor  (1,2,1));
+appendConstraints(getGround(0));
 appendConstraints(getVoltageSrc(2,0,1));
 solveCircuit(independents,dependents);
+
+// let components = [Solver.createResistor(Matrix.vec2(0,1),1)];
 
 
 function solveCircuit(ind,dep)
@@ -58,7 +66,7 @@ function getVoltageSrc(n1,n2,v)
     let iInd = independents.length;
     console.log(iInd);
     let dep = [
-        //n1 voltage
+        //voltage
         [n1,iInd, -1],
         [n2,iInd,  1],
         //n1 current
@@ -82,12 +90,25 @@ function appendConstraints(comp)
     }
 }
 
-function getNodeInd()
+function getGround(node)
 {
-    let out = [];
-    for(let i = 0; i < nodes; i++)
-    {
-        out[i] = 0;
-    }
-    return out;
+    let indep = [0];
+    let index = independents.length;
+    let dep = [
+        //voltage
+        [node,index, 1],
+        //n1 current
+        [index,node, 1]
+    ];
+    return [indep,dep];
 }
+
+// function getNodeInd()
+// {
+//     let out = [];
+//     for(let i = 0; i < nodes; i++)
+//     {
+//         out[i] = 0;
+//     }
+//     return out;
+// }
