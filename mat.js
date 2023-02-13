@@ -130,59 +130,128 @@ class Matrix
         Matrix.copyMat(outMat,dst);
     }
     
+    // static invert(src,dst)
+    // {
+    //     let width = Math.sqrt(src.length);
+    //     let proccesingMat = Matrix.newCopyMat(src);
+    //     let outMat = new Float32Array(src.length);
+    //     Matrix.identity(outMat);
+
+    //     for(let x = 0; x < width; x++)
+    //     {
+    //         let corn = Matrix.getElement(proccesingMat,x,x);
+    //         if(corn == 0)
+    //         {
+    //             for(let y = x+1; corn == 0&&y<=width; y++)
+    //             {
+    //                 if(y == width)
+    //                 {
+    //                     return false;
+    //                 }
+    //                 if(Matrix.getElement(proccesingMat,x,y) != 0)
+    //                 {
+    //                     Matrix.addScaleRow(proccesingMat,proccesingMat,1,y,x);
+    //                     Matrix.addScaleRow(outMat,outMat,1,y,x);
+    //                     corn = Matrix.getElement(proccesingMat,x,x);
+    //                 }
+    //                 if(corn == 0 && y >= width-1)
+    //                 {
+    //                     // console.error("MATRIX CANNOT BE SOVLED");
+    //                     return false;
+    //                 }
+    //             }
+    //         }
+
+    //         let scale0 = 1/corn;
+    //         Matrix.scaleRow(outMat,scale0,x);
+    //         Matrix.scaleRow(proccesingMat,scale0,x);
+    //         for(let y = x+1; y < width; y++)
+    //         {
+    //             let scale1 = -Matrix.getElement(proccesingMat,x,y);
+    //             Matrix.addScaleRow(proccesingMat,proccesingMat,scale1,x,y);
+    //             Matrix.addScaleRow(outMat,outMat,scale1,x,y);
+    //         }
+    //     }
+    //     for(let x = 0; x < width; x++)
+    //     {
+    //         for(let y = 0; y < x; y++)
+    //         {
+    //             let scale1 = -Matrix.getElement(proccesingMat,x,y);
+    //             Matrix.addScaleRow(proccesingMat,proccesingMat,scale1,x,y);
+    //             Matrix.addScaleRow(outMat,outMat,scale1,x,y);
+    //         }
+    //     }
+    //     Matrix.copyMat(outMat,dst);
+    //     return true;
+    // }
+
     static invert(src,dst)
-    {
+    {        
         let width = Math.sqrt(src.length);
         let proccesingMat = Matrix.newCopyMat(src);
         let outMat = new Float32Array(src.length);
         Matrix.identity(outMat);
 
+        //bottom half
         for(let x = 0; x < width; x++)
         {
-            let corn = Matrix.getElement(proccesingMat,x,x);
-            if(corn == 0)
+            let iiVal = Matrix.getElement(proccesingMat,x,x);
+            if(iiVal == 0)
             {
-                for(let y = x+1; corn == 0&&y<=width; y++)
+                let bestVal = 0;
+                let bestY = 0;
+                for(let y = 0; y < width; y++)
                 {
-                    if(y == width)
+                    let val = Matrix.getElement(x,y);
+                    if(val>bestVal&&y!=x)
                     {
-                        return false;
-                    }
-                    if(Matrix.getElement(proccesingMat,x,y) != 0)
-                    {
-                        Matrix.addScaleRow(proccesingMat,proccesingMat,1,y,x);
-                        Matrix.addScaleRow(outMat,outMat,1,y,x);
-                        corn = Matrix.getElement(proccesingMat,x,x);
-                    }
-                    if(corn == 0 && y >= width-1)
-                    {
-                        // console.error("MATRIX CANNOT BE SOVLED");
-                        return false;
+                        bestVal = val;
+                        bestY = y;
                     }
                 }
+                if(bestVal == 0)
+                {
+                    return false;
+                }
+                Matrix.addScaleRow(proccesingMat,proccesingMat,1/bestVal,bestY,x);
+                Matrix.addScaleRow(outMat,outMat,1/bestVal,bestY,x);
             }
-
-            let scale0 = 1/corn;
-            Matrix.scaleRow(outMat,scale0,x);
-            Matrix.scaleRow(proccesingMat,scale0,x);
+            else
+            {
+                Matrix.scaleRow(proccesingMat,1/iiVal,x);
+                Matrix.scaleRow(outMat,1/iiVal,x);
+            }
+            
             for(let y = x+1; y < width; y++)
             {
-                let scale1 = -Matrix.getElement(proccesingMat,x,y);
-                Matrix.addScaleRow(proccesingMat,proccesingMat,scale1,x,y);
-                Matrix.addScaleRow(outMat,outMat,scale1,x,y);
+                let val = Matrix.getElement(proccesingMat,x,y);
+                Matrix.logVec(x,y)
+                Matrix.addScaleRow(proccesingMat,proccesingMat,-val,x,y);
+                Matrix.addScaleRow(outMat,outMat,-val,x,y);
             }
         }
         for(let x = 0; x < width; x++)
         {
-            for(let y = 0; y < x; y++)
+            for(let y = x-1; y >= 0; y--)
             {
-                let scale1 = -Matrix.getElement(proccesingMat,x,y);
-                Matrix.addScaleRow(proccesingMat,proccesingMat,scale1,x,y);
-                Matrix.addScaleRow(outMat,outMat,scale1,x,y);
+                let val = Matrix.getElement(proccesingMat,x,y);
+                Matrix.logVec(x,y)
+                Matrix.addScaleRow(proccesingMat,proccesingMat,-val,x,y);
+                Matrix.addScaleRow(outMat,outMat,-val,x,y);
             }
         }
-        Matrix.copyMat(outMat,dst);
+        Matrix.copyMat(outMat,dst)
         return true;
+    }
+    static preciseInvert(src,iterations)
+    {
+        let width = Math.sqrt(src.length);
+        let inverse = Matrix.invert(src);
+        let error = Matrix.mat(width);
+        Matrix.mulMat(src,inverse,error);
+        let correction = Matrix.invert(error);
+        Matrix.mulMat(inverse,correction,inverse);
+        return inverse;
     }
 
 
