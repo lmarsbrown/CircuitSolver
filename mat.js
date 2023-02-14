@@ -225,7 +225,6 @@ class Matrix
             for(let y = x+1; y < width; y++)
             {
                 let val = Matrix.getElement(proccesingMat,x,y);
-                Matrix.logVec(x,y)
                 Matrix.addScaleRow(proccesingMat,proccesingMat,-val,x,y);
                 Matrix.addScaleRow(outMat,outMat,-val,x,y);
             }
@@ -235,7 +234,6 @@ class Matrix
             for(let y = x-1; y >= 0; y--)
             {
                 let val = Matrix.getElement(proccesingMat,x,y);
-                Matrix.logVec(x,y)
                 Matrix.addScaleRow(proccesingMat,proccesingMat,-val,x,y);
                 Matrix.addScaleRow(outMat,outMat,-val,x,y);
             }
