@@ -40,7 +40,7 @@ function findCircuitMat(dependents,independents)
         Matrix.addElement(mat,c[0],c[1],c[2]);
     }
     let outMat = Matrix.mat(independents.length);
-    parseSuccess = Matrix.invert(mat,outMat);
+    parseSuccess = Matrix.preciseInvert(mat,outMat);
     tsetMat = mat;
     return outMat;
 }

@@ -196,7 +196,7 @@ class Matrix
         for(let x = 0; x < width; x++)
         {
             let iiVal = Matrix.getElement(proccesingMat,x,x);
-            if(iiVal == 0)
+            if(Math.abs(iiVal) < 10**-4)
             {
                 let bestVal = 0;
                 let bestY = 0;
@@ -241,15 +241,23 @@ class Matrix
         Matrix.copyMat(outMat,dst)
         return true;
     }
-    static preciseInvert(src,iterations)
+    static preciseInvert(src,dst)
     {
         let width = Math.sqrt(src.length);
-        let inverse = Matrix.invert(src);
+        let inverse =  Matrix.mat(width);
+        let success = Matrix.invert(src,inverse);
+        if(!success)
+        {
+            return false;
+        }
+
         let error = Matrix.mat(width);
         Matrix.mulMat(src,inverse,error);
-        let correction = Matrix.invert(error);
-        Matrix.mulMat(inverse,correction,inverse);
-        return inverse;
+        let correction = Matrix.mat(width);
+        success = Matrix.invert(error,correction);
+
+        Matrix.mulMat(inverse,correction,dst);
+        return success;
     }
 
 
