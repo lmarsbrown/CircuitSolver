@@ -70,43 +70,18 @@ function parseCircuit()
     }
     circMat = findCircuitMat(depConstraints,indConstraints);
 }
-var outVex;
+var fixedVals;
 function solveCircuit()
 {
-    let outVec = Matrix.mulVec(circMat,indConstraints);
-    // Matrix.logVec(outVec);
-    outVex = outVec;
+    fixedVals = Matrix.mulVec(circMat,indConstraints);
 
     if(parseSuccess)
     {
         for(let i = 0; i < comps.length; i++)
         {
-            comps[i].updateValues(outVec);
+            comps[i].updateValues(fixedVals);
         }
     }
-
-    
-
-    // for(let i = 0; i < simples.length; i++)
-    // {
-    //     let uVec = Matrix.vec(solu[i],1);
-    //     let ivVec = Matrix.mulVec(simples[i].ivMat,uVec);
-    //     comps[i].v = ivVec[0];
-    //     comps[i].i = ivVec[1];
-
-    //     for(let j = 0; j < comps[i].connections.length; j++)
-    //     {
-    //         if(comps[i].connections[j][0] != 0)
-    //         {
-    //             comps[i].connections[j][2] = solu[comps.length+comps[i].connections[j][0]-1]
-    //         }
-    //     }
-    // }
-    // nVoltages = [];
-    // for(let i = 0; i < currentNode-2; i++)
-    // {
-    //     nVoltages[i] = solu[comps.length+i];
-    // }
 }
 
 

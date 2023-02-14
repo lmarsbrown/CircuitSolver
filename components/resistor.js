@@ -56,7 +56,7 @@ class Resistor extends Component
         if(!this.isCollapsed())
         {
             super.updateValues(outVec);
-            this.i = this.v/this.resistance;
+            this.i = -this.v/this.resistance;
         }
     }
 

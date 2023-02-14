@@ -227,7 +227,17 @@ class Component
     {
         for(let i = 0; i < this.connections.length; i++)
         {
-            this.connections[i][2] = outVec[this.connections[i][0]];
+            let v = outVec[this.connections[i][0]];
+            if(isNaN(v))
+            {
+                console.error("WELPERS");
+                debugger;
+                return;
+            }
+            else
+            {
+                this.connections[i][2] = v;
+            }
         }
         this.v = this.connections[1][2]-this.connections[0][2];
     }

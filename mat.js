@@ -140,21 +140,25 @@ class Matrix
         for(let x = 0; x < width; x++)
         {
             let corn = Matrix.getElement(proccesingMat,x,x);
-            if(corn == 0)
+            if(Math.abs((corn) < 10**-6))
             {
-                for(let y = x+1; corn == 0&&y<=width; y++)
+                for(let y = x+1; Math.abs(corn)< 10**-6&&y<=width; y++)
                 {
                     if(y == width)
                     {
                         return false;
                     }
-                    if(Matrix.getElement(proccesingMat,x,y) != 0)
+                    var succ = false;
+                    var preSucc;
+                    if(Math.abs(Matrix.getElement(proccesingMat,x,y)) > 10**-6)
                     {
                         Matrix.addScaleRow(proccesingMat,proccesingMat,1,y,x);
                         Matrix.addScaleRow(outMat,outMat,1,y,x);
+                        preSucc = corn;
                         corn = Matrix.getElement(proccesingMat,x,x);
+                        succ  = true;
                     }
-                    if(corn == 0 && y >= width-1)
+                    if(Math.abs(corn) < 10**-6&& y >= width-1)
                     {
                         // console.error("MATRIX CANNOT BE SOVLED");
                         return false;

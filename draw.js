@@ -50,7 +50,6 @@ function draw()
 {
     solveCircuit();
     clear();
-    populateNodes();
     drawComponents();
     drawOverlays();
     // drawGrid();

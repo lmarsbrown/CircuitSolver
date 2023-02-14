@@ -15,6 +15,7 @@ function mouseHover()
         {
             currentCompHover.selected = false
             currentCompHover = undefined;
+            currentCompHoverIndex = undefined;
         }
     }
 
@@ -26,6 +27,7 @@ function mouseHover()
             {
                 comps[i].selected = true;
                 currentCompHover = comps[i];
+                currentCompHoverIndex = i;
                 break;
             }
         }
@@ -50,7 +52,7 @@ function mouseHover()
     if(currentNodeHover!=undefined)
     {
         let localNode = getGridNode(roundPos[0],roundPos[1])
-        document.getElementById("DataPanel").innerText = "Node Voltage: "+ nVoltages[localNode-2];
+        document.getElementById("DataPanel").innerText = "Node Voltage: "+ fixedVals[localNode-1];
         ctx.fillStyle = `rgb(0,0,255)`;
         drawGridNode(roundPos[0],roundPos[1],8);
     }
@@ -62,31 +64,6 @@ function mouseHover()
     {
         document.getElementById("DataPanel").innerText = "";
     }
-
-    // let localNode = getGridNode(roundPos[0],roundPos[1])
-    
-    // if(localNode != 0)
-    // {
-    //     document.getElementById("DataPanel").innerText = "Node Voltage: "+ nVoltages[localNode-2];
-    //     if(localNode>1)
-    //     {
-    //         ctx.fillStyle = `rgb(0,0,255)`;
-    //         drawGridNode(roundPos[0],roundPos[1],8);
-    //     }
-    //     if(localNode==1)
-    //     {
-    //         ctx.fillStyle = `rgb(100,100,100)`;
-    //         drawGridNode(roundPos[0],roundPos[1],8);
-    //     }
-    // }
-    // else if(currentCompHover!=undefined)
-    // {
-    //     document.getElementById("DataPanel").innerText = "Current: " + currentCompHover.i;
-    // }
-    // else
-    // {
-    //     document.getElementById("DataPanel").innerText = "";
-    // }
 }
 
 function dragNode()
@@ -119,7 +96,6 @@ const gridW = 20;
 const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
 var currentNode = 2;
-var nVoltages = [];
 var dT =   50/(1000);
 var t = 0;
 
@@ -132,6 +108,7 @@ var mouse = {pos:Matrix.vec(2),downPos:Matrix.vec(2),down:false};
 var dragMode = 0;
 var currentNodeHover;
 var currentCompHover;
+var currentCompHoverIndex;
 var currentEditing;
 
 
@@ -147,7 +124,9 @@ function deleteHovered()
 {
     if(currentCompHover != undefined)
     {
-        comps.splice(comps.findIndex((ele)=>{ele == currentCompHover}),1);
+        comps.splice(currentCompHoverIndex,1);
+        currentCompHover = undefined;
+        currentCompHoverIndex = undefined;
         parseCircuit();
     }
 }
@@ -197,7 +176,14 @@ function main()
                 }
     
                 comps.push(newComp);
-                currentNodeHover = [comps.length-1,0];
+                if(dragMode!=2)
+                {
+                    currentNodeHover = [comps.length-1,1];
+                }
+                else
+                {
+                    currentNodeHover = [comps.length-1,0];
+                }
                 parseCircuit();
             }
 
@@ -281,6 +267,7 @@ function main()
             {
                 currentCompHover.selected = false;
                 currentCompHover = undefined;
+                currentCompHoverIndex = undefined;
             }
         }
         console.log(event.key)
