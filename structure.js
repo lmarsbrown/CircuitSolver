@@ -57,16 +57,17 @@ function parseCircuit()
     for(let i = 0; i < comps.length; i++)
     {
         let c = comps[i];
-        let inds = c.getIndependents(indConstraints.length);
+        // let inds = c.getIndependents(indConstraints.length);
+        c.addIndependents(indConstraints);
         let deps = c.getDependents();
         for(let i = 0; i < deps.length; i++)
         {
             depConstraints.push(deps[i]);
         }
-        for(let i = 0; i < inds.length; i++)
-        {
-            indConstraints.push(inds[i]);
-        }
+        // for(let i = 0; i < inds.length; i++)
+        // {
+        //     indConstraints.push(inds[i]);
+        // }
     }
     circMat = findCircuitMat(depConstraints,indConstraints);
 }
@@ -79,7 +80,7 @@ function solveCircuit()
     {
         for(let i = 0; i < comps.length; i++)
         {
-            comps[i].updateValues(fixedVals);
+            comps[i].updateValues(fixedVals,indConstraints,depConstraints);
         }
     }
 }

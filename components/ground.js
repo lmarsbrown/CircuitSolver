@@ -18,6 +18,11 @@ class Ground extends Component
             [this.index,node, 1]
         ];
     }
+    addIndependents(currentList)
+    {
+        this.index = currentList.length;
+        currentList.push(0);
+    }
     getIndependents(count)
     {
         this.index = count;
@@ -33,7 +38,7 @@ class Ground extends Component
         this.dep[1][0] = this.index;
         return this.dep;
     }
-    updateValues(outVec)
+    updateValues(outVec,indeps,deps)
     {
         
     }

@@ -27,10 +27,10 @@ class VoltageSource extends Component
             [this.iInd,n2,  1],
         ];
     }
-    getIndependents(count)
+    addIndependents(currentList)
     {
-        this.iInd = count;
-        return [this.voltage];
+        this.iInd = currentList.length;
+        currentList.push(this.voltage);
     }
     getDependents()
     {
@@ -48,7 +48,7 @@ class VoltageSource extends Component
         this.deps[3][0] = this.iInd;
         return this.deps;
     }
-    updateValues(outVec)
+    updateValues(outVec,indeps,deps)
     {
         super.updateValues(outVec);
         this.i = outVec[this.iInd];

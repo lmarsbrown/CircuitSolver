@@ -44,7 +44,7 @@ class Wire extends Component
         this.deps[3][0] = this.iInd;
         return this.deps;
     }
-    updateValues(outVec)
+    updateValues(outVec,indeps,deps)
     {
         super.updateValues(outVec);
         this.i = outVec[this.iInd];

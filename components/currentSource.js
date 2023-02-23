@@ -1,4 +1,8 @@
-class CurrentSource extends Resistor
+/*
+Make it so that you can edit exiting fixed constraints easily. Then add the current to the existing current constraints for the nodes
+*/
+
+class CurrentSource extends Component 
 {
     constructor(current,p1,p2)
     {
@@ -10,18 +14,32 @@ class CurrentSource extends Resistor
             [0,p1,0],
             [0,p2,0]
         ];
-
-        let ivMat = Matrix.mat(2);
-        ivMat[0] = 1;
-        ivMat[1] = 0;
-        ivMat[2] = 0;
-        ivMat[3] = current;
         
         this.v = 0;
-        this.i = 0;
+        this.i = current;
         
-
-        this.simple = {nodes:[0,0],ivMat:ivMat};
         this.t = 0;
+        
+        this.current = current;
+        this.iInd = 0;
+
+        let n1 = this.connections[0][0]; 
+        let n2 = this.connections[1][0]; 
+    }
+    getDependents()
+    {
+        return [];
+    }
+    updateValues(outVec,indeps,deps)
+    {
+        if(!this.isCollapsed())
+        {
+            super.updateValues(outVec);
+        }
+    }
+    addIndependents(currentList)
+    {
+        currentList[this.connections[0][0]] += this.current;
+        currentList[this.connections[1][0]] -= this.current;
     }
 }

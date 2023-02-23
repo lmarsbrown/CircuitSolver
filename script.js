@@ -171,7 +171,7 @@ function main()
                         newComp = new Inductor(0,1,rPos1,rPos2);
                         break;
                     case 7:
-                        newComp = new Capacitor(0,10,rPos1,rPos2);
+                        newComp = new Capacitor(0,20,rPos1,rPos2);
                         break;
                 }
     
