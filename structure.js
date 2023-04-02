@@ -48,39 +48,46 @@ function findCircuitMat(dependents,independents)
 function parseCircuit()
 {
     populateNodes();
-    depConstraints = [];
-    indConstraints = [];
+    circuitConstraints = [];
+    circuitParams = [];
     for(let i = 0; i < currentNode-1; i++)
     {
-        indConstraints.push(0);
+        circuitParams.push(0);
     }
     for(let i = 0; i < comps.length; i++)
     {
         let c = comps[i];
-        // let inds = c.getIndependents(indConstraints.length);
-        c.addIndependents(indConstraints);
-        let deps = c.getDependents();
-        for(let i = 0; i < deps.length; i++)
-        {
-            depConstraints.push(deps[i]);
-        }
-        // for(let i = 0; i < inds.length; i++)
+        
+        c.initParams(circuitParams);
+
+        c.initConstraints(circuitConstraints);
+
+        // for(let i = 0; i < deps.length; i++)
         // {
-        //     indConstraints.push(inds[i]);
+        //     circuitConstraints.push(deps[i]);
         // }
     }
-    circMat = findCircuitMat(depConstraints,indConstraints);
+    circMat = findCircuitMat(circuitConstraints,circuitParams);
 }
+
 var fixedVals;
 function solveCircuit()
 {
-    fixedVals = Matrix.mulVec(circMat,indConstraints);
+    fixedVals = Matrix.mulVec(circMat,circuitParams);
 
     if(parseSuccess)
     {
         for(let i = 0; i < comps.length; i++)
         {
-            comps[i].updateValues(fixedVals,indConstraints,depConstraints);
+            comps[i].updateValues(fixedVals,circuitParams,circuitConstraints);
+        }
+        for(let i = 0; i < circuitParams.length; i++)
+        {
+            circuitParams[i] = 0;
+        }
+        for(let i = 0; i < comps.length; i++)
+        {
+            comps[i].updateParams(circuitParams);
         }
     }
 }
@@ -99,6 +106,6 @@ function getGridNode(x,y)
 {
     return grid[x+y*gridW];
 }
-var indConstraints = [];
-var depConstraints = [];
+var circuitParams = [];
+var circuitConstraints = [];
 var circMat;

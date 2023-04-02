@@ -16,7 +16,7 @@ class Resistor extends Component
 
         let n1 = this.connections[0][0]; 
         let n2 = this.connections[1][0]; 
-        this.deps = [
+        this.constrnts = [
             //n1 current
             [n1,n1, -1/resistance],
             [n2,n1,  1/resistance],
@@ -25,30 +25,31 @@ class Resistor extends Component
             [n2,n2, -1/resistance]
         ];
     }
-    getDependents()
+    initConstraints(constraints)
     {
         if(!this.isCollapsed())
         {
             let n1 = this.connections[0][0]; 
             let n2 = this.connections[1][0]; 
             
-            this.deps[0][0] = n1;
-            this.deps[0][1] = n1;
+            this.constrnts[0][0] = n1;
+            this.constrnts[0][1] = n1;
             
-            this.deps[1][0] = n2;
-            this.deps[1][1] = n1;
+            this.constrnts[1][0] = n2;
+            this.constrnts[1][1] = n1;
             
-            this.deps[2][0] = n1;
-            this.deps[2][1] = n2;
+            this.constrnts[2][0] = n1;
+            this.constrnts[2][1] = n2;
             
-            this.deps[3][0] = n2;
-            this.deps[3][1] = n2;
-    
-            return this.deps;
+            this.constrnts[3][0] = n2;
+            this.constrnts[3][1] = n2;
+            for(let i = 0; i < this.constrnts.length; i++)
+            {
+                constraints.push(this.constrnts[i]);
+            }
         }
         else
         {
-            return [];
         }
     }
     updateValues(outVec,indeps,deps)

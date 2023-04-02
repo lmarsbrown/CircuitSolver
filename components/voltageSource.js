@@ -17,7 +17,7 @@ class VoltageSource extends Component
         this.iInd = 0;
         let n1 = this.connections[0][0]; 
         let n2 = this.connections[1][0]; 
-        this.deps = [
+        this.constrnts = [
             //voltage
             [n1,this.iInd, -1],
             [n2,this.iInd,  1],
@@ -27,26 +27,35 @@ class VoltageSource extends Component
             [this.iInd,n2,  1],
         ];
     }
-    addIndependents(currentList)
+    updateParams(paramList)
     {
-        this.iInd = currentList.length;
-        currentList.push(this.voltage);
+        
+        paramList[this.iInd] = this.voltage;
     }
-    getDependents()
+    initParams(paramList)
+    {
+        this.iInd = paramList.length;
+        this.updateParams(paramList);
+    }
+    initConstraints(constraints)
     {
         let n1 = this.connections[0][0]; 
         let n2 = this.connections[1][0]; 
         
-        this.deps[0][0] = n1;
-        this.deps[1][0] = n2;
-        this.deps[2][1] = n1;
-        this.deps[3][1] = n2;
+        this.constrnts[0][0] = n1;
+        this.constrnts[1][0] = n2;
+        this.constrnts[2][1] = n1;
+        this.constrnts[3][1] = n2;
 
-        this.deps[0][1] = this.iInd;
-        this.deps[1][1] = this.iInd;
-        this.deps[2][0] = this.iInd;
-        this.deps[3][0] = this.iInd;
-        return this.deps;
+        this.constrnts[0][1] = this.iInd;
+        this.constrnts[1][1] = this.iInd;
+        this.constrnts[2][0] = this.iInd;
+        this.constrnts[3][0] = this.iInd;
+
+        for(let i = 0; i < this.constrnts.length; i++)
+        {
+            constraints.push(this.constrnts[i]);
+        }
     }
     updateValues(outVec,indeps,deps)
     {

@@ -18,17 +18,16 @@ class Ground extends Component
             [this.index,node, 1]
         ];
     }
-    addIndependents(currentList)
+    updateParams(paramList)
     {
-        this.index = currentList.length;
-        currentList.push(0);
+        paramList[this.index] = 0;
     }
-    getIndependents(count)
+    initParams(paramList)
     {
-        this.index = count;
-        return [0];
+        this.index = paramList.length;
+        this.updateParams(paramList);
     }
-    getDependents()
+    initConstraints(constraints)
     {
         let node = this.connections[0][0];
         this.dep[0][0] = node;
@@ -36,6 +35,10 @@ class Ground extends Component
 
         this.dep[0][1] = this.index;
         this.dep[1][0] = this.index;
+        for(let i = 0; i < this.dep.length; i++)
+        {
+            constraints.push(this.dep[i]);
+        }
         return this.dep;
     }
     updateValues(outVec,indeps,deps)

@@ -203,7 +203,7 @@ class Matrix
                 for(let y = 0; y < width; y++)
                 {
                     let val = Matrix.getElement(proccesingMat,x,y);
-                    if(val>bestVal&&y!=x)
+                    if(Math.abs(val)>Math.abs(bestVal)&&y!=x)
                     {
                         bestVal = val;
                         bestY = y;

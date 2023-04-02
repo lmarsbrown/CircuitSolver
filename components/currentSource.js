@@ -26,10 +26,6 @@ class CurrentSource extends Component
         let n1 = this.connections[0][0]; 
         let n2 = this.connections[1][0]; 
     }
-    getDependents()
-    {
-        return [];
-    }
     updateValues(outVec,indeps,deps)
     {
         if(!this.isCollapsed())
@@ -37,9 +33,13 @@ class CurrentSource extends Component
             super.updateValues(outVec);
         }
     }
-    addIndependents(currentList)
+    updateParams(paramList)
     {
-        currentList[this.connections[0][0]] += this.current;
-        currentList[this.connections[1][0]] -= this.current;
+        paramList[this.connections[0][0]] += this.current;
+        paramList[this.connections[1][0]] -= this.current;
+    }
+    initParams(paramList)
+    {
+        this.updateParams(paramList);
     }
 }

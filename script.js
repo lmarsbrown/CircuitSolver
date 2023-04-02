@@ -159,7 +159,7 @@ function main()
                         newComp = new Ground(rPos1);
                         break;
                     case 3:
-                        newComp = new Resistor(10,rPos1,rPos2);
+                        newComp = new Resistor(1,rPos1,rPos2);
                         break;
                     case 4:
                         newComp = new VoltageSource(5,rPos1,rPos2);

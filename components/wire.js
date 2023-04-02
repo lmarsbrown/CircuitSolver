@@ -1,54 +1,59 @@
 
-class Wire extends Component
+class Wire extends VoltageSource
 {
     constructor(p1,p2)
     {
-        super();
+        super(0,p1,p2);
         this.type = Wire;
         this.connections = [
             [0,p1,0],
             [0,p2,0]
         ];
         
-        this.iInd = 0;
-        let n1 = this.connections[0][0]; 
-        let n2 = this.connections[1][0]; 
-        this.deps = [
-            //voltage
-            [n1,this.iInd, -1],
-            [n2,this.iInd,  1],
-            //n1 current
-            [this.iInd,n1, -1],
-            //n2 current
-            [this.iInd,n2,  1],
-        ];
+        // this.iInd = 0;
+        // let n1 = this.connections[0][0]; 
+        // let n2 = this.connections[1][0]; 
+        // this.deps = [
+        //     //voltage
+        //     [n1,this.iInd, -1],
+        //     [n2,this.iInd,  1],
+        //     //n1 current
+        //     [this.iInd,n1, -1],
+        //     //n2 current
+        //     [this.iInd,n2,  1],
+        // ];
     }
-    getIndependents(count)
-    {
-        this.iInd = count;
-        return [0];
-    }
-    getDependents()
-    {
-        let n1 = this.connections[0][0]; 
-        let n2 = this.connections[1][0]; 
-        
-        this.deps[0][0] = n1;
-        this.deps[1][0] = n2;
-        this.deps[2][1] = n1;
-        this.deps[3][1] = n2;
 
-        this.deps[0][1] = this.iInd;
-        this.deps[1][1] = this.iInd;
-        this.deps[2][0] = this.iInd;
-        this.deps[3][0] = this.iInd;
-        return this.deps;
-    }
-    updateValues(outVec,indeps,deps)
-    {
-        super.updateValues(outVec);
-        this.i = outVec[this.iInd];
-    }
+    //No idea why I was doing this. I just changed it to extend
+
+    // getIndependents(count)
+    // {
+    //     this.iInd = count;
+    //     return [0];
+    // }
+    // getDependents()
+    // {
+    //     let n1 = this.connections[0][0]; 
+    //     let n2 = this.connections[1][0]; 
+        
+    //     this.deps[0][0] = n1;
+    //     this.deps[1][0] = n2;
+    //     this.deps[2][1] = n1;
+    //     this.deps[3][1] = n2;
+
+    //     this.deps[0][1] = this.iInd;
+    //     this.deps[1][1] = this.iInd;
+    //     this.deps[2][0] = this.iInd;
+    //     this.deps[3][0] = this.iInd;
+    //     return this.deps;
+    // // }
+
+
+    // updateValues(outVec,indeps,deps)
+    // {
+    //     super.updateValues(outVec);
+    //     this.i = outVec[this.iInd];
+    // }
 
 
      /**

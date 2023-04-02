@@ -215,13 +215,34 @@ class Component
     {
         return Matrix.vecDist(this.connections[0][1],this.connections[1][1])<0.1;
     }
-    getDependents()
+    initConstraints(constraints)
     {
         return [];
     }
-    addIndependents(currentList)
+    initParams(currentList)
     {
-        return [];
+    }
+    updateValues(outVec,indeps,deps)
+    {
+        for(let i = 0; i < this.connections.length; i++)
+        {
+            let v = outVec[this.connections[i][0]];
+            if(isNaN(v))
+            {
+                console.error("WELPERS");
+                debugger;
+                return;
+            }
+            else
+            {
+                this.connections[i][2] = v;
+            }
+        }
+        this.v = this.connections[1][2]-this.connections[0][2];
+    }
+    updateParams()
+    {
+        
     }
     draw()
     {
@@ -275,23 +296,5 @@ class Component
 
         ctx.stroke(restPath);
         ctx.resetTransform();
-    }
-    updateValues(outVec,indeps,deps)
-    {
-        for(let i = 0; i < this.connections.length; i++)
-        {
-            let v = outVec[this.connections[i][0]];
-            if(isNaN(v))
-            {
-                console.error("WELPERS");
-                debugger;
-                return;
-            }
-            else
-            {
-                this.connections[i][2] = v;
-            }
-        }
-        this.v = this.connections[1][2]-this.connections[0][2];
     }
 }
