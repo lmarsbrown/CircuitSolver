@@ -29,7 +29,6 @@ class VoltageSource extends Component
     }
     updateParams(paramList)
     {
-        
         paramList[this.iInd] = this.voltage;
     }
     initParams(paramList)

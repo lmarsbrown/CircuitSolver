@@ -46,6 +46,8 @@ function drawGrid()
     }
 }
 
+
+let resetCirc = false;
 function draw()
 {
     solveCircuit();
@@ -72,6 +74,8 @@ function draw()
         }
     
     }
+    t+=dT;
+    
 
     requestAnimationFrame(draw);
 }

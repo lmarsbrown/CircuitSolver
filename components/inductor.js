@@ -3,7 +3,7 @@ class Inductor extends Resistor
 {
     constructor(current,inductance,p1,p2)
     {
-        super(inductance+1000,p1,p2);
+        super(2*inductance/dT,p1,p2);
         this.type = Inductor;
         this.defaultSize = 2.5;
 
@@ -19,7 +19,7 @@ class Inductor extends Resistor
         if(!this.isCollapsed())
         {
             super.updateValues(outVec);
-            this.current += this.i;
+            this.current += 2*this.i;
             this.i = this.current;
         }
     }

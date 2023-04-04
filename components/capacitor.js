@@ -2,34 +2,85 @@ class Capacitor extends Resistor
 {
     constructor(voltage,capacitance,p1,p2)
     {
-        super(-dT/2*capacitance,p1,p2);
+        super(dT/(2*capacitance) ,p1,p2);
+        this.pseudoResistance = dT/(2*capacitance);
         this.type = Capacitor;
+        this.defaultSize = 2.5;
 
-        this.v = -voltage;
-        this.i = 0;
-        this.pV = this.v;
+        this.v = 0;
+
+        this.voltage = voltage;
+        this.current = this.voltage/this.pseudoResistance;
+        // this.i = current;
         
-        // let n1 = this.connections[0][0]; 
-        // let n2 = this.connections[1][0]; 
-        // this.iInd = 0;
-        // this.deps.push([n1,this.iInd, -1]);
-        // this.deps.push([n2,this.iInd, 1]);
-    }
-    // addIndependents(currentList)
-    // {
-    //     // this.iInd = currentList.length;
-    //     // currentList.push(this.voltage);
-    // }
-    // getDependents()
-    // {
-    //     super.getDependents();
-    //     // let n1 = this.connections[0][0]; 
-    //     // let n2 = this.connections[1][0]; 
 
-    //     // this.deps[4][1] = this.iInd;
-    //     // this.deps[5][1] = this.iInd;
-    //     return this.deps;
+        this.t = 0;
+    }
+    updateValues(outVec,indeps,deps)
+    {
+        if(!this.isCollapsed())
+        {
+            super.updateValues(outVec);
+
+            if(resetCirc)
+            {
+                resetCirc = false;
+                window.t = 0;
+                this.v = 10;
+                this.voltage = 10;
+                console.log("test");
+            }
+
+            this.voltage += 2*(this.v-this.voltage);
+            this.i += this.current;
+        }
+    }
+    updateParams(paramList)
+    {
+        this.current = this.voltage/this.pseudoResistance;
+        paramList[this.connections[0][0]] += this.current;
+        paramList[this.connections[1][0]] -= this.current;
+    }
+    initParams(paramList)
+    {
+        this.updateParams(paramList);
+    }
+
+    // constructor(voltage,capacitance,p1,p2)
+    // {
+    //     super(dT/2*capacitance,p1,p2);
+    //     this.calcResist = dT/2*capacitance;
+    //     this.type = Capacitor;
+
+    //     this.v = 0;
+    //     this.i = 0;
+
+    //     this.voltage = voltage;
+    //     this.current = this.voltage/this/this.calcResist;
+
+    //     this.iInd = 0;
     // }
+    // updateValues(outVec,indeps,deps)
+    // {
+    //     if(!this.isCollapsed())
+    //     {
+    //         super.updateValues(outVec);
+    //         this.voltage = this.v;
+    //         this.current = this.voltage/this/this.calcResist;
+    //         this.i -= this.current;
+    //     }
+    // }
+    // updateParams(paramList)
+    // {
+    //     paramList[this.connections[0][0]] += this.i;
+    //     paramList[this.connections[1][0]] -= this.i;
+    // }
+    // initParams(paramList)
+    // {
+    //     this.updateParams(paramList);
+    // }
+
+
     draw()
     {
         const compLen = (getScreenPos(Matrix.vec(0.5,0))[0]-getScreenPos(Matrix.vec(0,0))[0]);

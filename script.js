@@ -96,7 +96,7 @@ const gridW = 20;
 const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
 var currentNode = 2;
-var dT =   50/(1000);
+var dT =   1/(1000);
 var t = 0;
 
 let pV = 0;
@@ -168,10 +168,10 @@ function main()
                         newComp = new CurrentSource(10,rPos1,rPos2);
                         break;
                     case 6:
-                        newComp = new Inductor(0,1,rPos1,rPos2);
+                        newComp = new Inductor(0,0.1,rPos1,rPos2);
                         break;
                     case 7:
-                        newComp = new Capacitor(0,20,rPos1,rPos2);
+                        newComp = new Capacitor(10,0.1,rPos1,rPos2);
                         break;
                 }
     
