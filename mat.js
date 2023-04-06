@@ -196,9 +196,9 @@ class Matrix
         //bottom half
         for(let x = 0; x < width; x++)
         {
-            let iiVal = Matrix.getElement(proccesingMat,x,x);
-            // if(Math.abs(iiVal) < 10**-4)
+            // Move highest number in column to the current slot and scale to 1
             {
+                let iiVal = Matrix.getElement(proccesingMat,x,x);
                 let bestVal = 0;
                 let bestY = 0;
                 for(let y = x; y < width; y++)
@@ -227,21 +227,12 @@ class Matrix
                     Matrix.addScaleRow(outMat,outMat,1/bestVal,bestY,x);
                 }
                 
-            }
-            // else
-            // {
-            let revisediiVal = Matrix.getElement(proccesingMat,x,x);
-            Matrix.scaleRow(proccesingMat,1/revisediiVal,x);
-            Matrix.scaleRow(outMat,1/revisediiVal,x);
-            // }
-            if(debug)
-            {
-                console.log("start")
-                console.log(proccesingMat[0])
-                Matrix.logMat(proccesingMat,4);
-                console.log("\n\n");
-            }
             
+                let revisediiVal = Matrix.getElement(proccesingMat,x,x);
+                Matrix.scaleRow(proccesingMat,1/revisediiVal,x);
+                Matrix.scaleRow(outMat,1/revisediiVal,x);
+            }
+            //Clear column below
             for(let y = x+1; y < width; y++)
             {
                 let val = Matrix.getElement(proccesingMat,x,y);
@@ -249,14 +240,9 @@ class Matrix
                 // console.log(val)
                 Matrix.addScaleRow(outMat,outMat,-val,x,y);
             }
-            if(debug)
-            {
-                console.log("end")
-                Matrix.logMat(proccesingMat,4);
-                console.log("\n\n");
-            }
         }
 
+        //Top half
         for(let x = 0; x < width; x++)
         {
             for(let y = x-1; y >= 0; y--)
@@ -264,13 +250,6 @@ class Matrix
                 let val = Matrix.getElement(proccesingMat,x,y);
                 Matrix.addScaleRow(proccesingMat,proccesingMat,-val,x,y);
                 Matrix.addScaleRow(outMat,outMat,-val,x,y);
-                if(debug)
-                {
-                    console.log("up")
-                    console.log(x,y)
-                    Matrix.logMat(proccesingMat,4);
-                    console.log("\n\n");
-                }
             }
         }
         Matrix.copyMat(outMat,dst)
