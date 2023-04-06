@@ -159,19 +159,19 @@ function main()
                         newComp = new Ground(rPos1);
                         break;
                     case 3:
-                        newComp = new Resistor(1000*1000*1000*1000,rPos1,rPos2);
+                        newComp = new Resistor(6,rPos1,rPos2);
                         break;
                     case 4:
-                        newComp = new VoltageSource(1000*1000*1000*1001+1,rPos1,rPos2);
+                        newComp = new VoltageSource(12,rPos1,rPos2);
                         break;
                     case 5:
                         newComp = new CurrentSource(10,rPos1,rPos2);
                         break;
                     case 6:
-                        newComp = new Inductor(0,0.1,rPos1,rPos2);
+                        newComp = new Inductor(0,10,rPos1,rPos2);
                         break;
                     case 7:
-                        newComp = new Capacitor(10,0.1,rPos1,rPos2);
+                        newComp = new Capacitor(0,0.1,rPos1,rPos2);
                         break;
                 }
     

@@ -221,16 +221,14 @@ class Matrix
                     Matrix.logMat(proccesingMat,4);
                     console.log("\n\n");
                 }
-                if(bestY != x)
-                {
-                    Matrix.addScaleRow(proccesingMat,proccesingMat,1/bestVal,bestY,x);
-                    Matrix.addScaleRow(outMat,outMat,1/bestVal,bestY,x);
-                }
-                
-            
-                let revisediiVal = Matrix.getElement(proccesingMat,x,x);
-                Matrix.scaleRow(proccesingMat,1/revisediiVal,x);
-                Matrix.scaleRow(outMat,1/revisediiVal,x);
+                Matrix.addScaleRow(proccesingMat,proccesingMat,(1-iiVal)/bestVal,bestY,x);
+                Matrix.addScaleRow(outMat,outMat,(1-iiVal)/bestVal,bestY,x);
+            }
+            if(debug)
+            {
+                console.log("start",x)
+                Matrix.logMat(proccesingMat,4);
+                console.log("\n\n");
             }
             //Clear column below
             for(let y = x+1; y < width; y++)

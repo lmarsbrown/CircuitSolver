@@ -48,12 +48,26 @@ function drawGrid()
 
 
 let resetCirc = false;
+
 function draw()
 {
-    solveCircuit();
+    let tempMax = 0;
+    for(let i = 0; i < 1; i++)
+    {
+        solveCircuit();
+        if(comps.length>1)
+        {
+            let vVal = comps[1].v;
+            if(Math.abs(vVal)>tempMax)
+            {
+                tempMax = Math.abs(vVal);
+            }
+        }
+    }
     clear();
     drawComponents();
     drawOverlays();
+    max = tempMax;
     // drawGrid();
     if(!mouse.down)
     {
