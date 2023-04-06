@@ -2,7 +2,7 @@ class Matrix
 {
     static mulVec(mat,vec)
     {
-        let out = new Float32Array(vec.length);
+        let out = new Float64Array(vec.length);
         for(let y = 0; y < vec.length; y++)
         {
             let sum = 0;
@@ -103,7 +103,7 @@ class Matrix
     {
         let width = Math.sqrt(src.length);
         let proccesingMat = Matrix.newCopyMat(src);
-        let outMat = new Float32Array(src.length);
+        let outMat = new Float64Array(src.length);
         Matrix.identity(outMat);
 
         for(let x = 0; x < width; x++)
@@ -134,7 +134,7 @@ class Matrix
     // {
     //     let width = Math.sqrt(src.length);
     //     let proccesingMat = Matrix.newCopyMat(src);
-    //     let outMat = new Float32Array(src.length);
+    //     let outMat = new Float64Array(src.length);
     //     Matrix.identity(outMat);
 
     //     for(let x = 0; x < width; x++)
@@ -185,50 +185,78 @@ class Matrix
     //     return true;
     // }
 
-    static invert(src,dst)
+
+    static invert(src,dst,debug=false)
     {        
         let width = Math.sqrt(src.length);
         let proccesingMat = Matrix.newCopyMat(src);
-        let outMat = new Float32Array(src.length);
+        let outMat = new Float64Array(src.length);
         Matrix.identity(outMat);
 
         //bottom half
         for(let x = 0; x < width; x++)
         {
             let iiVal = Matrix.getElement(proccesingMat,x,x);
-            if(Math.abs(iiVal) < 10**-4)
+            // if(Math.abs(iiVal) < 10**-4)
             {
                 let bestVal = 0;
                 let bestY = 0;
-                for(let y = 0; y < width; y++)
+                for(let y = x; y < width; y++)
                 {
                     let val = Matrix.getElement(proccesingMat,x,y);
-                    if(Math.abs(val)>Math.abs(bestVal)&&y!=x)
+                    if(Math.abs(val)>Math.abs(bestVal))
                     {
                         bestVal = val;
                         bestY = y;
                     }
+                    if(debug)console.log("y:" + y,val,bestVal,bestY);
                 }
                 if(bestVal == 0)
                 {
                     return false;
                 }
-                Matrix.addScaleRow(proccesingMat,proccesingMat,1/bestVal,bestY,x);
-                Matrix.addScaleRow(outMat,outMat,1/bestVal,bestY,x);
+                if(debug)
+                {
+                    console.log("early",1/bestVal,bestY,x)
+                    Matrix.logMat(proccesingMat,4);
+                    console.log("\n\n");
+                }
+                if(bestY != x)
+                {
+                    Matrix.addScaleRow(proccesingMat,proccesingMat,1/bestVal,bestY,x);
+                    Matrix.addScaleRow(outMat,outMat,1/bestVal,bestY,x);
+                }
+                
             }
-            else
+            // else
+            // {
+            let revisediiVal = Matrix.getElement(proccesingMat,x,x);
+            Matrix.scaleRow(proccesingMat,1/revisediiVal,x);
+            Matrix.scaleRow(outMat,1/revisediiVal,x);
+            // }
+            if(debug)
             {
-                Matrix.scaleRow(proccesingMat,1/iiVal,x);
-                Matrix.scaleRow(outMat,1/iiVal,x);
+                console.log("start")
+                console.log(proccesingMat[0])
+                Matrix.logMat(proccesingMat,4);
+                console.log("\n\n");
             }
             
             for(let y = x+1; y < width; y++)
             {
                 let val = Matrix.getElement(proccesingMat,x,y);
                 Matrix.addScaleRow(proccesingMat,proccesingMat,-val,x,y);
+                // console.log(val)
                 Matrix.addScaleRow(outMat,outMat,-val,x,y);
             }
+            if(debug)
+            {
+                console.log("end")
+                Matrix.logMat(proccesingMat,4);
+                console.log("\n\n");
+            }
         }
+
         for(let x = 0; x < width; x++)
         {
             for(let y = x-1; y >= 0; y--)
@@ -236,12 +264,19 @@ class Matrix
                 let val = Matrix.getElement(proccesingMat,x,y);
                 Matrix.addScaleRow(proccesingMat,proccesingMat,-val,x,y);
                 Matrix.addScaleRow(outMat,outMat,-val,x,y);
+                if(debug)
+                {
+                    console.log("up")
+                    console.log(x,y)
+                    Matrix.logMat(proccesingMat,4);
+                    console.log("\n\n");
+                }
             }
         }
         Matrix.copyMat(outMat,dst)
         return true;
     }
-    static preciseInvert(src,dst)
+    static preciseInvert(src,dst,passes = 1)
     {
         let width = Math.sqrt(src.length);
         let inverse =  Matrix.mat(width);
@@ -252,11 +287,15 @@ class Matrix
         }
 
         let error = Matrix.mat(width);
-        Matrix.mulMat(src,inverse,error);
         let correction = Matrix.mat(width);
-        success = Matrix.invert(error,correction);
 
-        Matrix.mulMat(inverse,correction,dst);
+        for(let i = 0; i < passes; i++)
+        {
+            Matrix.mulMat(src,inverse,error);
+            success = Matrix.invert(error,correction);
+            Matrix.mulMat(inverse,correction,inverse);
+        }
+        Matrix.copyMat(inverse,dst);
         return success;
     }
 
@@ -277,18 +316,19 @@ class Matrix
     }
 
     /**
-     * @param {Float32Array} src source mat
-     * @param {Float32Array} dst dest mat
+     * @param {Float64Array} src source mat
+     * @param {Float64Array} dst dest mat
      * @param {Number} scale scale amount
      * @param {Number} row0 src row index
      * @param {Number} row1 dest row index
      */
-    static addScaleRow(src,dst,scale,row0,row1)
+    static addScaleRow(src,dst,scale,row0,row1,debug = false)
     {
         let width = Math.sqrt(src.length);
         for(let i = 0; i < width; i++)
         {
             dst[row1*width+i] += src[row0*width+i]*scale;
+            if(debug)console.log("dstI: "+row1*width+i+", src: "+row0*width+i+", scale: "+scale+", srcVal: "+src[row0*width+i]*scale+", dstVal: "+dst[row1*width+i])
         }
     }
 
@@ -327,7 +367,7 @@ class Matrix
     }
     static newCopyMat(src)
     {
-        let out = new Float32Array(src.length);
+        let out = new Float64Array(src.length);
         for(let i = 0; i < src.length; i++)
         {
             out[i] = src[i];
@@ -335,7 +375,7 @@ class Matrix
         return out;
     }
 
-    static logMat(mat)
+    static logMat(mat,trunc = 0)
     {
         let width = Math.sqrt(mat.length);
         let out = "";
@@ -344,7 +384,16 @@ class Matrix
             let str = "";
             for(let x = 0; x < width; x++)
             {
-                str+=mat[x+y*width]+", ";
+                if(trunc == 0)
+                {
+                    str+=mat[x+y*width]+", ";
+                }
+                else
+                {
+                    let val = mat[x+y*width];
+                    str+=(Math.trunc(val*(10**trunc))/(10**trunc))+", ";
+                    
+                }
             }
             out+=str+"\n";
         }
@@ -386,17 +435,17 @@ class Matrix
 
     static mat(size)
     {
-        return new Float32Array(size*size);
+        return new Float64Array(size*size);
     }
     static vec(...args)
     {
         if(args.length == 1)
         {
-            return new Float32Array(args[0]);
+            return new Float64Array(args[0]);
         }
         else
         {
-            let out = new Float32Array(args.length);
+            let out = new Float64Array(args.length);
             for(let i = 0; i < args.length; i++)
             {
                 out[i] = args[i];

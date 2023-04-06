@@ -96,7 +96,7 @@ const gridW = 20;
 const gridH = 20;
 var grid = new Uint16Array(gridW*gridH);
 var currentNode = 2;
-var dT =   1/(1000);
+var dT =   10/(1000);
 var t = 0;
 
 let pV = 0;
@@ -159,7 +159,7 @@ function main()
                         newComp = new Ground(rPos1);
                         break;
                     case 3:
-                        newComp = new Resistor(1,rPos1,rPos2);
+                        newComp = new Resistor(1000*1000,rPos1,rPos2);
                         break;
                     case 4:
                         newComp = new VoltageSource(5,rPos1,rPos2);
