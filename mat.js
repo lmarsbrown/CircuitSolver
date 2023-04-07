@@ -253,7 +253,7 @@ class Matrix
         Matrix.copyMat(outMat,dst)
         return true;
     }
-    static preciseInvert(src,dst,passes = 1)
+    static preciseInvert(src,dst,passes = 1,debug = false)
     {
         let width = Math.sqrt(src.length);
         let inverse =  Matrix.mat(width);
@@ -270,6 +270,10 @@ class Matrix
         {
             Matrix.mulMat(src,inverse,error);
             success = Matrix.invert(error,correction);
+            if(debug)
+            {
+                Matrix.logMat(correction);
+            }
             Matrix.mulMat(inverse,correction,inverse);
         }
         Matrix.copyMat(inverse,dst);
