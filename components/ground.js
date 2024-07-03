@@ -45,6 +45,10 @@ class Ground extends Component
     {
         
     }
+    calcRealNodeCurrents()
+    {
+        
+    }
     draw()
     {
         let p = this.connections[0][1];

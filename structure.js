@@ -109,3 +109,54 @@ function getGridNode(x,y)
 var circuitParams = [];
 var circuitConstraints = [];
 var circMat;
+
+
+var node_voltages;
+
+
+function grad_dec()
+{
+    node_voltages = Matrix.mulVec(circMat,circuitParams);
+    let err = 1.0
+    for(let i = 0; i < 250 &err>(10**-15); i++)
+    {
+        err = grad_step(node_voltages)
+    }
+}
+var currentError;
+function grad_step(voltages)
+{
+    let realCurrents = new Float64Array(circuitParams.length);
+    currentError = new Float64Array(circuitParams.length);
+    for(let i = 0; i < comps.length; i++)
+    {
+        comps[i].calcRealNodeCurrents(realCurrents,voltages);
+    }
+    for(let i = 0; i < currentError.length; i++)
+    {
+        currentError[i] = 0.1*(circuitParams[i]-realCurrents[i]);
+    }
+    console.log(currentError)
+    console.log(voltages)
+
+
+    circuitConstraints = [];
+    circuitParams = [];
+    for(let i = 0; i < currentNode-1; i++)
+    {
+        circuitParams.push(0);
+    }
+    for(let i = 0; i < comps.length; i++)
+    {
+        let c = comps[i];
+        
+        c.initParams(circuitParams);
+
+        c.initConstraints(circuitConstraints);
+    }
+    circMat = findCircuitMat(circuitConstraints,circuitParams);
+    let correction = Matrix.mulVec(circMat, currentError);
+    console.log(correction)
+    node_voltages = Matrix.addVecs(node_voltages,correction);
+    return Matrix.vecLength(currentError);
+}

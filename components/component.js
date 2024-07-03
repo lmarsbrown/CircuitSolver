@@ -138,6 +138,11 @@ getSymbolImg("capacitor.svg",(data)=>{
     Capacitor.symbol = [new Path2D(data[0]),new Path2D(data[1])];
 });
 
+getSymbolImg("diode.svg",(data,paths)=>{
+    Diode.symbol = new Path2D(data[0]);
+    Diode.path = paths[0];
+});
+
 
 class Component
 {
@@ -239,6 +244,16 @@ class Component
             }
         }
         this.v = this.connections[1][2]-this.connections[0][2];
+    }
+    calcRealNodeCurrents(testDeps, testIndeps)
+    {
+        if(this.constrnts !=undefined)
+        {
+            for(let c of this.constrnts)
+            {
+                testDeps[c[1]] += testIndeps[c[0]]*c[2];
+            }
+        }
     }
     updateParams()
     {

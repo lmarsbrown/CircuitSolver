@@ -79,6 +79,7 @@ function dragNode()
     {
         console.log("success")
         parseCircuit();
+        // grad_dec();
         solveCircuit();
     }
 }
@@ -173,6 +174,9 @@ function main()
                     case 7:
                         newComp = new Capacitor(0,0.1,rPos1,rPos2);
                         break;
+                    case 8:
+                        newComp = new Diode(0.0001,rPos1,rPos2);
+                        break;
                 }
     
                 comps.push(newComp);
@@ -250,6 +254,9 @@ function main()
                 break;
             case "c":
                 dragMode = 7;
+                break;
+            case "d":
+                dragMode = 8;
                 break;
             case "Delete":
             case "Backspace":
